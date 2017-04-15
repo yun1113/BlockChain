@@ -4,27 +4,26 @@ import org.apache.commons.io.FileUtils;
 import com.google.gson.Gson;
 import java.util.UUID;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Wallet {
 	private String uuid = null;
 	private int address_num = 0;
-
+	private String account = null;
+	private ArrayList<String> assress_list = null;
+	
 	public Wallet(String account) {
 		generateWallet(account);
 	}
 
 	public void generateWallet(String account) {
+		this.account = account;
 		File f = null;
-		Gson gson = new Gson();
-		Map<String, Object> map = new HashMap<String, Object>();
-
+		
 		// generate unique uuid
 		while (true) {
 			uuid = UUID.randomUUID().toString();
-			
-			map.put("account", account);
-			map.put("uuid", uuid);
 
 			f = new File(String.format("./data/wallet/%s.txt", uuid));
 			if (f.exists() && !f.isDirectory()) {
@@ -32,13 +31,6 @@ public class Wallet {
 			} else {
 				break;
 			}
-		}
-		String json = gson.toJson(map);
-		
-		try {
-			FileUtils.write(f, json, "UTF-8", true);
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 

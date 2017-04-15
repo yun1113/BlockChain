@@ -8,7 +8,7 @@ import com.google.gson.Gson;
 public class TradingHall {
 	public static void main(String[] args) {
 		Scanner scanner = new Scanner(System.in);
-		String wallet_id = null;
+		Wallet wallet = null;
 
 		// Index
 		boolean exit_page = false;
@@ -22,13 +22,14 @@ public class TradingHall {
 			switch (user_action) {
 			case 1: // Sign Up
 				String account = signUp();
-				wallet_id = createWallet(account);
+				wallet = createWallet(account);
 				System.out.print(
-						"Sign Up Success!\n" + "Your account:" + account + "\nYour wallet id:" + wallet_id + '\n');
+						"Sign Up Success!\n" + "Your account:" + account + "\nYour wallet id:" + wallet.getUUID() + '\n');
+				exit_page = true;
 				break;
 			case 2: // Log In
-				wallet_id = logIn();
-				if (wallet_id != null) {
+				wallet = logIn();
+				if (wallet != null) {
 					exit_page = true;
 				}
 				break;
@@ -50,7 +51,7 @@ public class TradingHall {
 
 			switch (user_action) {
 			case 1:
-				viewWalletInfoPage(wallet_id);
+//				viewWalletInfoPage(wallet_id);
 				break;
 			case 2:
 				break;
@@ -103,13 +104,24 @@ public class TradingHall {
 		return account;
 	}
 
-	private static String createWallet(String account) {
+	private static Wallet createWallet(String account) {
 		Wallet wallet = new Wallet(account);
-		return wallet.getUUID();
+		
+		Gson gson = new Gson();
+		String json = gson.toJson(wallet);
+		
+		try {
+			FileUtils.write(new File(String.format("./data/wallet/%s.txt", wallet.getUUID())), json, "UTF-8", true);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return wallet;
 	}
 
-	private static String logIn() {
+	private static Wallet logIn() {
 		Scanner scanner = new Scanner(System.in);
+		Gson gson = new Gson();
+		
 		// Check whether login success
 		while (true) {
 			System.out.println("Please enter your wallet id:");
@@ -122,7 +134,17 @@ public class TradingHall {
 
 			if (check_identity) {
 				System.out.println("Welcome");
-				return wallet_id;
+				
+				String json = null;
+				try {
+					json = FileUtils.readFileToString(new File(String.format("./data/wallet/%s.txt", wallet_id)), "UTF-8");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				Wallet wallet = gson.fromJson(json, Wallet.class);
+				
+				return wallet;
 			} else {
 				System.out.println("Please enter correct informaions");
 			}
