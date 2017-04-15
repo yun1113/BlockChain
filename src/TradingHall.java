@@ -8,8 +8,8 @@ import com.google.gson.Gson;
 public class TradingHall {
 	public static void main(String[] args) {
 		Scanner scanner = new Scanner(System.in);
-		Wallet wallet = null;
-		
+		String wallet_id = null;
+
 		// Index
 		boolean exit_page = false;
 		while (!exit_page) {
@@ -22,13 +22,13 @@ public class TradingHall {
 			switch (user_action) {
 			case 1: // Sign Up
 				String account = signUp();
-				String wallet_id = createWallet(account);
+				wallet_id = createWallet(account);
 				System.out.print(
 						"Sign Up Success!\n" + "Your account:" + account + "\nYour wallet id:" + wallet_id + '\n');
 				break;
 			case 2: // Log In
-				boolean login = logIn();
-				if (login) {
+				wallet_id = logIn();
+				if (wallet_id != null) {
 					exit_page = true;
 				}
 				break;
@@ -42,14 +42,15 @@ public class TradingHall {
 		// Main page
 		exit_page = false;
 		while (!exit_page) {
-			System.out.println("========================================\n");
-			System.out.println("=       Please Choose your action      =\n");
-			System.out.println("========================================\n");
-			System.out.print("1. My Wallet\n" + "2. Make Trascation\n" + "3. Exit\n");
+			System.out.println("========================================");
+			System.out.println("=       Please Choose your action      =");
+			System.out.println("========================================");
+			System.out.print("1. Wallet Info\n" + "2. Make Trascation\n" + "3. Exit\n");
 			int user_action = scanner.nextInt();
 
 			switch (user_action) {
 			case 1:
+				viewWalletInfoPage(wallet_id);
 				break;
 			case 2:
 				break;
@@ -93,7 +94,7 @@ public class TradingHall {
 		map.put("account", account);
 		map.put("password", password);
 		String json = gson.toJson(map);
-		
+
 		try {
 			FileUtils.write(new File(String.format("./data/account/%s.txt", account)), json, "UTF-8", true);
 		} catch (IOException e) {
@@ -107,42 +108,41 @@ public class TradingHall {
 		return wallet.getUUID();
 	}
 
-	private static boolean logIn() {
+	private static String logIn() {
 		Scanner scanner = new Scanner(System.in);
+		// Check whether login success
+		while (true) {
+			System.out.println("Please enter your wallet id:");
+			String wallet_id = scanner.next();
 
-		System.out.println("Please enter your wallet id:");
-		String wallet_id = scanner.next();
+			System.out.println("Please enter your password:");
+			String password = scanner.next();
 
-		System.out.println("Please enter your password:");
-		String password = scanner.next();
+			boolean check_identity = checkIdentity(wallet_id, password);
 
-		boolean check_identity = checkIdentity(wallet_id, password);
-		if (check_identity) {
-			System.out.print("Welcome\n");
-			return true;
+			if (check_identity) {
+				System.out.println("Welcome");
+				return wallet_id;
+			} else {
+				System.out.println("Please enter correct informaions");
+			}
 		}
-
-		return false;
 	}
 
 	private static boolean checkIdentity(String wallet_id, String password) {
 		try {
-			String file_path = String.format("./data/wallet/%s.txt", wallet_id);
-			
-			
-			
-			BufferedReader br = new BufferedReader(new FileReader(file_path));
-			StringBuilder sb = new StringBuilder();
-			String line = br.readLine();
+			String wallet_path = String.format("./data/wallet/%s.txt", wallet_id);
+			BufferedReader br = new BufferedReader(new FileReader(wallet_path));
+			Map<String, Object> wallet_map = new Gson().fromJson(br, Map.class);
+			String account = (String) wallet_map.get("account");
 
-			while (line != null) {
-				sb.append(line);
-				line = br.readLine();
-			}
-			String check = sb.toString();
+			String account_path = String.format("./data/account/%s.txt", account);
+			br = new BufferedReader(new FileReader(account_path));
+			Map<String, Object> account_map = new Gson().fromJson(br, Map.class);
 			br.close();
 
-			if (check.equals(password)) {
+			String check_password = (String) account_map.get("password");
+			if (check_password.equals(password)) {
 				return true;
 			}
 		} catch (FileNotFoundException e) {
@@ -153,7 +153,29 @@ public class TradingHall {
 		return false;
 	}
 
-	private static void getMyWallet(){
-		
+	private static void viewWalletInfoPage(String wallet_id) {
+		Scanner scanner = new Scanner(System.in);
+		boolean exit_page = false;
+		while (!exit_page) {
+			System.out.println("========================================");
+			System.out.println("=          Wallet Information          =");
+			System.out.println("========================================");
+			System.out.print("1. List All Address\n" + "2. Generate New Address\n" + "3. Exit\n");
+			int user_action = scanner.nextInt();
+			
+			switch (user_action) {
+			case 1:
+				
+				break;
+			case 2:
+				break;
+			case 3:
+				exit_page = true;
+				break;
+			default:
+				break;
+			}
+
+		}
 	}
 }
