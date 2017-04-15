@@ -1,9 +1,17 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+
 import org.apache.commons.io.FileUtils;
-import java.io.*;
+
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class TradingHall {
 	public static void main(String[] args) {
@@ -51,7 +59,7 @@ public class TradingHall {
 
 			switch (user_action) {
 			case 1:
-//				viewWalletInfoPage(wallet_id);
+				viewWalletInfoPage(wallet);
 				break;
 			case 2:
 				break;
@@ -106,16 +114,19 @@ public class TradingHall {
 
 	private static Wallet createWallet(String account) {
 		Wallet wallet = new Wallet(account);
-		
-		Gson gson = new Gson();
+		updateWallet(wallet);
+		return wallet;
+	}
+	
+	private static void updateWallet(Wallet wallet){
+		Gson gson = new GsonBuilder().registerTypeAdapter(Wallet.class, new WalletSerializer())
+                .create();
 		String json = gson.toJson(wallet);
-		
 		try {
-			FileUtils.write(new File(String.format("./data/wallet/%s.txt", wallet.getUUID())), json, "UTF-8", true);
+			FileUtils.write(new File(String.format("./data/wallet/%s.txt", wallet.getUUID())), json, "UTF-8", false);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return wallet;
 	}
 
 	private static Wallet logIn() {
@@ -175,21 +186,27 @@ public class TradingHall {
 		return false;
 	}
 
-	private static void viewWalletInfoPage(String wallet_id) {
+	private static void viewWalletInfoPage(Wallet wallet) {
 		Scanner scanner = new Scanner(System.in);
 		boolean exit_page = false;
 		while (!exit_page) {
 			System.out.println("========================================");
 			System.out.println("=          Wallet Information          =");
 			System.out.println("========================================");
-			System.out.print("1. List All Address\n" + "2. Generate New Address\n" + "3. Exit\n");
+			System.out.print("1. List All Address\n" + "2. Generate New Address\n" + "3. Return\n");
 			int user_action = scanner.nextInt();
 			
 			switch (user_action) {
 			case 1:
-				
+				ArrayList<String> addr_list = wallet.getAddress();
+				for (String addr : addr_list) {
+					System.out.println(addr);
+				}
 				break;
 			case 2:
+				String new_addr = wallet.generateNewAddress();
+				System.out.println("New address " + new_addr + " created");
+				updateWallet(wallet);
 				break;
 			case 3:
 				exit_page = true;

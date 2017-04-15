@@ -1,6 +1,11 @@
-import java.security.*;
+
 import java.io.*;
+
 import org.apache.commons.io.FileUtils;
+import org.bitcoinj.core.ECKey;
+import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.params.TestNet3Params;
+
 import com.google.gson.Gson;
 import java.util.UUID;
 import java.util.Map;
@@ -11,16 +16,16 @@ public class Wallet {
 	private String uuid = null;
 	private int address_num = 0;
 	private String account = null;
-	private ArrayList<String> assress_list = null;
-	
+	private ArrayList<String> address_list = new ArrayList<String>();
+
 	public Wallet(String account) {
 		generateWallet(account);
 	}
 
-	public void generateWallet(String account) {
+	private void generateWallet(String account) {
 		this.account = account;
 		File f = null;
-		
+
 		// generate unique uuid
 		while (true) {
 			uuid = UUID.randomUUID().toString();
@@ -38,43 +43,46 @@ public class Wallet {
 		return uuid;
 	}
 
-	public void saveRSAKey() {
-
+	public String generateNewAddress() {
+		String addr = null;
 		try {
-			SecureRandom sr = new SecureRandom();
-			KeyPairGenerator kg = KeyPairGenerator.getInstance("RSA");
-
-			// generate 1024 bits key with random number
-			kg.initialize(1024, sr);
-
-			// write to file
-			FileOutputStream fos = new FileOutputStream("./data/key/RSAKey.xml");
-			ObjectOutputStream oos = new ObjectOutputStream(fos);
-
-			oos.writeObject(kg.generateKeyPair());
-			oos.close();
-
+			// key generate
+			Gson gson = new Gson();
+			ECKey ceKey = new ECKey();
+			NetworkParameters params = TestNet3Params.get();
+			ceKey.getPublicKeyAsHex();
+			ceKey.toAddress(params).toBase58();
+			
+			Map<String, Object> keypair = new HashMap<String, Object>(); 
+			keypair.put("pri_key", ceKey.getPrivateKeyAsHex());
+			keypair.put("pub_key", ceKey.getPublicKeyAsHex());
+			addr = ceKey.toAddress(params).toBase58();
+			keypair.put("addr", addr);
+			
+			String json = gson.toJson(keypair);			
+			try {
+				FileUtils.write(new File(String.format("./data/key/%s.txt", addr)), json, "UTF-8", true);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			address_num += 1;
+			address_list.add(addr);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return addr;
 	}
 
-	public static KeyPair getKeyPair() {
-		KeyPair kp = null;
-		try {
-
-			String fileName = "./data/key/RSAKey.xml";
-			InputStream is = FileUtils.class.getClassLoader().getResourceAsStream(fileName);
-
-			ObjectInputStream oos = new ObjectInputStream(is);
-			kp = (KeyPair) oos.readObject();
-			oos.close();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return kp;
-
+	public ArrayList<String> getAddress() {
+		return address_list;
 	}
 
+	public int getAddressNum(){
+		return address_num;
+	}
+
+	public String getAccount(){
+		return account;
+	}
 }
