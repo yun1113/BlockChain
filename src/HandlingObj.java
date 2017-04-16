@@ -45,5 +45,21 @@ public class HandlingObj {
 		Wallet wallet = gson.fromJson(json, Wallet.class);
 		return wallet;
 	}
+	
+	public static Address getAddress(String addr){
+		Gson gson = new GsonBuilder().registerTypeAdapter(Address.class, new AddressDeserializer())
+                .create();
+		
+		String json = null;
+		try {
+			json = FileUtils.readFileToString(new File(String.format("./data/address/%s.txt", addr)), "UTF-8");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		Address address = gson.fromJson(json, Address.class);
+		return address;
+	}
 
 }

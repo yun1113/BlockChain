@@ -1,6 +1,7 @@
 
 public class Transaction {
 	
+	private String transcation_id =null;
 	private String version = null;
 	private int input_count = 0;
 	private int output_count = 0;
