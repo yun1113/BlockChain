@@ -14,7 +14,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class TradingHall {
-	public static void main(String[] args) {
+	public static void main(String[] args) {		
 		Scanner scanner = new Scanner(System.in);
 		Wallet wallet = null;
 
@@ -54,7 +54,7 @@ public class TradingHall {
 			System.out.println("========================================");
 			System.out.println("=       Please Choose your action      =");
 			System.out.println("========================================");
-			System.out.print("1. Wallet Info\n" + "2. Make Trascation\n" + "3. Exit\n");
+			System.out.print("1. Wallet Info\n" + "2. Trascation Info\n" + "3. Exit\n");
 			int user_action = scanner.nextInt();
 
 			switch (user_action) {
@@ -62,6 +62,7 @@ public class TradingHall {
 				viewWalletInfoPage(wallet);
 				break;
 			case 2:
+				viewTransactionPage(wallet);
 				break;
 			case 3:
 				System.exit(0);
@@ -114,20 +115,11 @@ public class TradingHall {
 
 	private static Wallet createWallet(String account) {
 		Wallet wallet = new Wallet(account);
-		updateWallet(wallet);
+		wallet.generateWallet();
+		HandlingObj.savingWallet(wallet);
 		return wallet;
 	}
 	
-	private static void updateWallet(Wallet wallet){
-		Gson gson = new GsonBuilder().registerTypeAdapter(Wallet.class, new WalletSerializer())
-                .create();
-		String json = gson.toJson(wallet);
-		try {
-			FileUtils.write(new File(String.format("./data/wallet/%s.txt", wallet.getUUID())), json, "UTF-8", false);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 
 	private static Wallet logIn() {
 		Scanner scanner = new Scanner(System.in);
@@ -145,16 +137,7 @@ public class TradingHall {
 
 			if (check_identity) {
 				System.out.println("Welcome");
-				
-				String json = null;
-				try {
-					json = FileUtils.readFileToString(new File(String.format("./data/wallet/%s.txt", wallet_id)), "UTF-8");
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				Wallet wallet = gson.fromJson(json, Wallet.class);
-				
+				Wallet wallet = HandlingObj.getWallet(wallet_id);
 				return wallet;
 			} else {
 				System.out.println("Please enter correct informaions");
@@ -198,15 +181,15 @@ public class TradingHall {
 			
 			switch (user_action) {
 			case 1:
-				ArrayList<String> addr_list = wallet.getAddress();
-				for (String addr : addr_list) {
-					System.out.println(addr);
+				ArrayList<Address> addr_list = wallet.getAddresses();
+				for (Address addr : addr_list) {
+					System.out.println(addr.getAddress());
 				}
 				break;
 			case 2:
-				String new_addr = wallet.generateNewAddress();
-				System.out.println("New address " + new_addr + " created");
-				updateWallet(wallet);
+				Address new_addr = wallet.generateNewAddress();
+				System.out.println("New address " + new_addr.getAddress() + " created");
+				HandlingObj.savingWallet(wallet);
 				break;
 			case 3:
 				exit_page = true;
@@ -217,4 +200,31 @@ public class TradingHall {
 
 		}
 	}
+	private static void viewTransactionPage(Wallet wallet) {
+		Scanner scanner = new Scanner(System.in);
+		boolean exit_page = false;
+		while (!exit_page) {
+			System.out.println("========================================");
+			System.out.println("=        Transaction Information       =");
+			System.out.println("========================================");
+			System.out.print("1. Make Transaction\n" + "3. Return\n");
+			int user_action = scanner.nextInt();
+			
+			switch (user_action) {
+			case 1: // make transactions
+				
+				break;
+			case 2: // List all transaction
+				
+				break;
+			case 3:
+				exit_page = true;
+				break;
+			default:
+				break;
+			}
+
+		}
+	}
+
 }
