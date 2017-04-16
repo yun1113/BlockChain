@@ -1,6 +1,12 @@
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
+import org.apache.commons.io.FileUtils;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -18,15 +24,17 @@ public class WalletSerializer implements JsonSerializer<Wallet> {
 		result.add("account", new JsonPrimitive(wallet.getAccount()));
 
 		JsonArray jsonArray = new JsonArray();
-		ArrayList<String> address_list = wallet.getAddress();
+		ArrayList<Address> address_list = wallet.getAddresses();
 		if (address_list != null) {
-			for (String value : address_list) {
-				jsonArray.add(new JsonPrimitive(value));
+			for (Address value : address_list) {
+				Gson gson = new GsonBuilder().registerTypeAdapter(Address.class, new AddressSerializer())
+		                .create();
+				String address = gson.toJson(value);
+				jsonArray.add(new JsonPrimitive(address));
 			}
 			result.add("address_list", jsonArray);
 		}
 
 		return result;
 	}
-
 }

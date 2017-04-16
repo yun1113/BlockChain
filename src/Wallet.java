@@ -16,14 +16,13 @@ public class Wallet {
 	private String uuid = null;
 	private int address_num = 0;
 	private String account = null;
-	private ArrayList<String> address_list = new ArrayList<String>();
+	private ArrayList<Address> address_list = new ArrayList<Address>();
 
 	public Wallet(String account) {
-		generateWallet(account);
+		this.account = account;
 	}
 
-	private void generateWallet(String account) {
-		this.account = account;
+	public void generateWallet() {
 		File f = null;
 
 		// generate unique uuid
@@ -43,38 +42,13 @@ public class Wallet {
 		return uuid;
 	}
 
-	public String generateNewAddress() {
-		String addr = null;
-		try {
-			// key generate
-			Gson gson = new Gson();
-			ECKey ceKey = new ECKey();
-			NetworkParameters params = TestNet3Params.get();
-			ceKey.getPublicKeyAsHex();
-			ceKey.toAddress(params).toBase58();
-			
-			Map<String, Object> keypair = new HashMap<String, Object>(); 
-			keypair.put("pri_key", ceKey.getPrivateKeyAsHex());
-			keypair.put("pub_key", ceKey.getPublicKeyAsHex());
-			addr = ceKey.toAddress(params).toBase58();
-			keypair.put("addr", addr);
-			
-			String json = gson.toJson(keypair);			
-			try {
-				FileUtils.write(new File(String.format("./data/key/%s.txt", addr)), json, "UTF-8", true);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-			address_num += 1;
-			address_list.add(addr);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return addr;
+	public Address generateNewAddress() {
+		Address new_addr = new Address(uuid);
+		address_list.add(new_addr);
+		return new_addr;
 	}
 
-	public ArrayList<String> getAddress() {
+	public ArrayList<Address> getAddresses() {
 		return address_list;
 	}
 
@@ -84,5 +58,21 @@ public class Wallet {
 
 	public String getAccount(){
 		return account;
+	}
+
+	public void setUUID(String uuid){
+		this.uuid = uuid;
+	}
+	
+	public void setAccount(String account){
+		this.account = account;
+	}
+	
+	public void setAddressNum(int address_num){
+		this.address_num = address_num;
+	}
+	
+	public void setAddressList(ArrayList<Address> address_list){
+		this.address_list = address_list;
 	}
 }
