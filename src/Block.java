@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 
 public class Block {
 	
@@ -7,9 +8,15 @@ public class Block {
 	private String merkle_root = null;
 	private String difficulty = null;
 	private String timestamp = null;
-
-	public Block() {
-		// TODO Auto-generated constructor stub
+	private ArrayList<Transaction> transaction_list = new ArrayList<Transaction>(); 
+	
+	
+	public Block(String parent_block) {
+		this.parent_block = parent_block;
+	}
+	
+	private void blockValidate(){
+		
 	}
 
 }
