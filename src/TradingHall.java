@@ -245,9 +245,8 @@ public class TradingHall {
 				System.out.println("Input output value:");
 				int output_value = scanner.nextInt();
 				
-//				Transaction trans = new Transaction();
-				
-				
+				Transaction trans = new Transaction(input_addr_list, output_addr_list, output_value);
+				trans.signTransaction();
 				break;
 			case 2: // List all transaction
 				

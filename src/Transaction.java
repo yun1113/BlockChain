@@ -40,4 +40,8 @@ public class Transaction {
 
 		this.signSig = signSig;
 	}
+	
+	public void validateTransaction(){
+		// TODO
+	}
 }
