@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -70,12 +69,6 @@ public class TradingHall {
 				break;
 			}
 		}
-
-		// Choose User to transaction
-		// make transaction
-		// Verify transaction
-		// make block
-		// Verify block
 	}
 
 	private static String signUp() {
@@ -176,17 +169,20 @@ public class TradingHall {
 			System.out.println("========================================");
 			System.out.println("=          Wallet Information          =");
 			System.out.println("========================================");
-			System.out.print("1. List All Address\n" + "2. Return\n");
+			System.out.print("1. Wallet Total Value\n"+"2. List All Address\n" + "3. Return\n");
 			int user_action = scanner.nextInt();
 			
 			switch (user_action) {
 			case 1:
+				System.out.println(wallet.getTotalValue());
+				break;
+			case 2:
 				ArrayList<Address> addr_list = wallet.getAddresses();
 				for (Address addr : addr_list) {
 					System.out.println(addr.getAddress());
 				}
 				break;
-			case 2:
+			case 3:
 				exit_page = true;
 				break;
 			default:
@@ -202,7 +198,7 @@ public class TradingHall {
 			System.out.println("========================================");
 			System.out.println("=        Transaction Information       =");
 			System.out.println("========================================");
-			System.out.print("1. Send Bitcoin\n" + "2. Receive Bitcoin" + "3. Return\n");
+			System.out.print("1. Send Bitcoin\n" + "2. Receive Bitcoin\n" + "3. Return\n");
 			int user_action = scanner.nextInt();
 			
 			switch (user_action) {
@@ -225,7 +221,8 @@ public class TradingHall {
 				break;
 			case 2: 
 				Address new_addr = wallet.generateNewAddress();
-				System.out.println("Use this address - " + new_addr.getAddress() + " to receive bitcoin.");
+				System.out.println("Use this address '" + new_addr.getAddress() + "' to receive bitcoin.");
+				HandlingObj.savingAddress(new_addr);
 				HandlingObj.savingWallet(wallet);
 				break;
 			case 3:

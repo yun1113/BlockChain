@@ -24,7 +24,7 @@ public class Address {
 	private String wallet_id = null;
 	private String pub_key = null;
 	private String pri_key = null;
-	private ArrayList<Transaction> transaction_list = new ArrayList<Transaction>();
+	private ArrayList<String> transaction_list = new ArrayList<String>();
 	private int value = 0;
 	
 	public Address(String wallet_id) {
@@ -60,7 +60,7 @@ public class Address {
 		}
 	}
 
-	public void addTransaction(Transaction t){
+	public void addTransaction(String t){
 		transaction_list.add(t);
 	}
 	
@@ -85,7 +85,7 @@ public class Address {
 	}
 	
 	
-	public ArrayList<Transaction> getTransactionList(){
+	public ArrayList<String> getTransactionList(){
 		return transaction_list;
 	}
 

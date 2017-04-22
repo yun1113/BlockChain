@@ -1,5 +1,4 @@
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -16,12 +15,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.Sha256Hash;
 
 public class Transaction {
 
-	private String transcation_id = null;
+	private String transcation_hash = null;
 	private ArrayList<Map<String, String>> input_list = new ArrayList<Map<String, String>>();
 	private ArrayList<Map<String, String>> output_list = new ArrayList<Map<String, String>>();
 	private long timestamp = System.currentTimeMillis() / 1000L;
@@ -31,6 +28,8 @@ public class Transaction {
 	public Transaction(Wallet wallet, Address output_address, int value) {
 		output_list.add(transaction_detail(value, output_address.getAddress()));
 		geneateInputList(wallet, value);
+		signTransaction();
+		updateRelatedAddress();
 	}
 
 	public Map<String, String> transaction_detail(int value, String address) {
@@ -38,6 +37,21 @@ public class Transaction {
 		map.put("value", Integer.toString(value));
 		map.put("address", address);
 		return map;
+	}
+
+	private void updateRelatedAddress() {
+		for (Map<String, String> map : input_list) {
+			String addr_string = map.get("address");
+			Address addr = HandlingObj.getAddress(addr_string);
+			addr.addTransaction(transcation_hash);
+			HandlingObj.savingAddress(addr);
+		}
+		for (Map<String, String> map : output_list) {
+			String addr_string = map.get("address");
+			Address addr = HandlingObj.getAddress(addr_string); 
+			addr.addTransaction(transcation_hash);
+			HandlingObj.savingAddress(addr);
+		}
 	}
 
 	private void geneateInputList(Wallet wallet, int value) {
@@ -85,9 +99,10 @@ public class Transaction {
 		for (Map<String, String> map : output_list) {
 			hash_string += map.get("address");
 		}
-		
+
 		String sha256hex = DigestUtils.sha256Hex(hash_string);
-		
+		this.transcation_hash = sha256hex;
+
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 		KeyFactory kf;
 		try {
@@ -96,7 +111,7 @@ public class Transaction {
 			byte[] pri_key_byte = Base64.getDecoder().decode(sign_pri_key.getBytes());
 			PKCS8EncodedKeySpec ks2 = new PKCS8EncodedKeySpec(pri_key_byte);
 			PrivateKey pk2 = kf.generatePrivate(ks2);
-			
+
 			// generate signature
 			Signature ecdsaSign = Signature.getInstance("SHA256withECDSA", "BC");
 			ecdsaSign.initSign(pk2);

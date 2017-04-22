@@ -37,12 +37,6 @@ public class Wallet {
 			}
 		}
 	}
-
-	public void updateWallet(){
-		for(Address addr: address_list){
-			
-		}
-	}
 	
 	public String getUUID() {
 		return uuid;

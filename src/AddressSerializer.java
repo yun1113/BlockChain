@@ -17,6 +17,7 @@ public class AddressSerializer implements JsonSerializer<Address> {
 		result.add("wallet_id", new JsonPrimitive(address.getWalletId()));
 		result.add("pub_key", new JsonPrimitive(address.getPublicKey()));
 		result.add("pri_key", new JsonPrimitive(address.getPrivateKey()));
+		result.add("value", new JsonPrimitive(address.getValue()));
 		return result;
 	}
 }

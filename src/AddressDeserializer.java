@@ -16,7 +16,7 @@ public class AddressDeserializer implements JsonDeserializer<Address> {
 		address.setAddress(jsonObject.get("address").getAsString());
 		address.setPublicKey(jsonObject.get("pub_key").getAsString());
 		address.setPrivateKey(jsonObject.get("pri_key").getAsString());
-
+		address.setValue(jsonObject.get("value").getAsInt());
 		return address;
 	}
 
