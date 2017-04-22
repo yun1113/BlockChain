@@ -10,7 +10,7 @@ public class Block {
 	private Block prev_block = null;
 	private String merkle_root = null;
 	private BigInteger difficulty = null;
-	private String timestamp = null;
+	private long timestamp = System.currentTimeMillis() / 1000L;
 	private int nonce = 0;
 	private String hash_prev_block = null;
 	private ArrayList<Transaction> transaction_list = new ArrayList<Transaction>();
