@@ -207,7 +207,7 @@ public class TradingHall {
 			System.out.println("========================================");
 			System.out.println("=        Transaction Information       =");
 			System.out.println("========================================");
-			System.out.print("1. Make Transaction\n" + "3. Return\n");
+			System.out.print("1. Send Bitcoin\n" + "2. Receive Bitcoin" + "3. Return\n");
 			int user_action = scanner.nextInt();
 			
 			switch (user_action) {
@@ -248,8 +248,10 @@ public class TradingHall {
 				Transaction trans = new Transaction(input_addr_list, output_addr_list, output_value);
 				trans.signTransaction();
 				break;
-			case 2: // List all transaction
-				
+			case 2: 
+				Address new_addr = wallet.generateNewAddress();
+				System.out.println("Use this address - " + new_addr.getAddress() + " to receive bitcoin.");
+				HandlingObj.savingWallet(wallet);
 				break;
 			case 3:
 				exit_page = true;
