@@ -1,6 +1,8 @@
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -18,6 +20,15 @@ public class AddressSerializer implements JsonSerializer<Address> {
 		result.add("pub_key", new JsonPrimitive(address.getPublicKey()));
 		result.add("pri_key", new JsonPrimitive(address.getPrivateKey()));
 		result.add("value", new JsonPrimitive(address.getValue()));
+		
+		JsonArray jsonArray = new JsonArray();
+		ArrayList<String> transaction_list = address.getTransactionList();
+		if (transaction_list != null) {
+			for (String value : transaction_list) {
+				jsonArray.add(new JsonPrimitive(value));
+			}
+			result.add("transaction_list", jsonArray);
+		}
 		return result;
 	}
 }

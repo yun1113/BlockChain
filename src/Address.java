@@ -102,5 +102,9 @@ public class Address {
 	public void setValue(int value){
 		this.value = value;
 	}
+	
+	public void setTransactionList(ArrayList<String> transaction_list){
+		this.transaction_list = transaction_list;
+	}
 
 }
