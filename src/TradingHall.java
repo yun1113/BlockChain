@@ -176,7 +176,7 @@ public class TradingHall {
 			System.out.println("========================================");
 			System.out.println("=          Wallet Information          =");
 			System.out.println("========================================");
-			System.out.print("1. List All Address\n" + "2. Generate New Address\n" + "3. Return\n");
+			System.out.print("1. List All Address\n" + "2. Return\n");
 			int user_action = scanner.nextInt();
 			
 			switch (user_action) {
@@ -187,11 +187,6 @@ public class TradingHall {
 				}
 				break;
 			case 2:
-				Address new_addr = wallet.generateNewAddress();
-				System.out.println("New address " + new_addr.getAddress() + " created");
-				HandlingObj.savingWallet(wallet);
-				break;
-			case 3:
 				exit_page = true;
 				break;
 			default:
