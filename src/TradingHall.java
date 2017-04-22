@@ -207,41 +207,21 @@ public class TradingHall {
 			
 			switch (user_action) {
 			case 1: // make transactions
-				ArrayList<Address> addr_list = wallet.getAddresses();
-				ArrayList<Address> input_addr_list = new ArrayList<Address>();
 				
-				boolean enter_finish = false;
-				while(!enter_finish){
-					System.out.println("Choose you input address:");
-					for (Address addr : addr_list) {
-						System.out.println(addr_list.indexOf(addr) +" : "+ addr.getAddress());
-					}
-					int input_addr = scanner.nextInt();
-					if(input_addr == -1){
-						enter_finish = true;
-						continue;
-					}
-					Address input_address = addr_list.get(input_addr);
-					input_addr_list.add(input_address);
-				}
-				
-				ArrayList<Address> output_addr_list = new ArrayList<Address>();
-				while(!enter_finish){
-					System.out.println("Input output address: (Enter -1 to finish)");
-					String output_addr = scanner.next();
-					if(output_addr == "-1"){
-						enter_finish = true;
-						continue;
-					}
-					Address output_address = HandlingObj.getAddress(output_addr);
-					output_addr_list.add(output_address);
-				}
+				System.out.println("Input output address:");
+				String output_addr = scanner.next();
+				Address output_address = HandlingObj.getAddress(output_addr);
 				
 				System.out.println("Input output value:");
 				int output_value = scanner.nextInt();
 				
-				Transaction trans = new Transaction(input_addr_list, output_addr_list, output_value);
-				trans.signTransaction();
+				if(wallet.getTotalValue()>=output_value){
+					Transaction trans = new Transaction(wallet, output_address, output_value);
+				}
+				else{
+					System.out.println("You do not have enough money");
+				}
+				
 				break;
 			case 2: 
 				Address new_addr = wallet.generateNewAddress();

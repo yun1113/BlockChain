@@ -38,6 +38,12 @@ public class Wallet {
 		}
 	}
 
+	public void updateWallet(){
+		for(Address addr: address_list){
+			
+		}
+	}
+	
 	public String getUUID() {
 		return uuid;
 	}
@@ -60,6 +66,14 @@ public class Wallet {
 		return account;
 	}
 
+	public int getTotalValue(){
+		int total = 0;
+		for(Address addr : address_list){
+			total += addr.getValue();
+		}
+		return total;
+	}
+	
 	public void setUUID(String uuid){
 		this.uuid = uuid;
 	}
