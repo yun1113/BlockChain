@@ -23,13 +23,24 @@ public class Transaction {
 	private ArrayList<Map<String, String>> output_list = new ArrayList<Map<String, String>>();
 	private long timestamp = System.currentTimeMillis() / 1000L;
 	private String signSig = null;
-	private boolean coinbase;
+	private boolean coinbase = false;
 
 	public Transaction(Wallet wallet, Address output_address, int value) {
 		output_list.add(transaction_detail(value, output_address.getAddress()));
 		geneateInputList(wallet, value);
 		signTransaction();
 		updateRelatedAddress();
+	}
+	
+	public Transaction(String transcation_hash, ArrayList<Map<String, String>> input_list,
+			ArrayList<Map<String, String>> output_list, long timestamp,  String signSig, 
+			boolean coinbase) {
+		this.transcation_hash = transcation_hash;
+		this.input_list = input_list;
+		this.output_list = output_list;
+		this.timestamp = timestamp;
+		this.signSig = signSig;
+		this.coinbase = coinbase;
 	}
 
 	public Map<String, String> transaction_detail(int value, String address) {
@@ -140,7 +151,28 @@ public class Transaction {
 		// TODO
 	}
 
+	public String getTransactionHash(){
+		return transcation_hash;
+	}
+	
+	public long getTimestamp(){
+		return timestamp;
+	}
+	
+	public String getSignSig(){
+		return signSig;
+	}
+	
+	public boolean getCoinBase(){
+		return coinbase;
+	}
+	
+	public ArrayList<Map<String, String>> getInputList(){
+		return input_list;
+	}
+	
 	public ArrayList<Map<String, String>> getOutputList() {
 		return output_list;
 	}
+	
 }
