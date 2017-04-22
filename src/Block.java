@@ -6,7 +6,6 @@ import org.bitcoinj.core.Sha256Hash;
 public class Block {
 
 	private String block_id = null;
-	private String version = null;
 	private String parent_block = null;
 	private String merkle_root = null;
 	private BigInteger difficulty = null;
@@ -20,6 +19,7 @@ public class Block {
 
 	private void validateBlock() {
 		String hash_string = null;
+		// TODO need signsig
 		hash_string = parent_block + merkle_root + timestamp;
 		int nonce = 0;
 		while (true) {
@@ -30,6 +30,11 @@ public class Block {
 			}
 			nonce += 1;
 		}
+	}
+	
+	// traceback to coint origin
+	private void validateAllTransaction() {
+		
 	}
 
 }
