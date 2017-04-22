@@ -61,5 +61,32 @@ public class HandlingObj {
 		Address address = gson.fromJson(json, Address.class);
 		return address;
 	}
+	
+	public static void savingTransaction(Transaction transaction){
+		Gson gson = new GsonBuilder().registerTypeAdapter(Transaction.class, new TransactionSerializer())
+                .create();
+		String json = gson.toJson(transaction);
+		try {
+			FileUtils.write(new File(String.format("./data/transaction/%s.txt", transaction.getTransactionHash())), json, "UTF-8", false);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static Transaction getTransaction(String transaction_hash){
+		Gson gson = new GsonBuilder().registerTypeAdapter(Transaction.class, new TransactionDeserializer())
+                .create();
+		
+		String json = null;
+		try {
+			json = FileUtils.readFileToString(new File(String.format("./data/transaction/%s.txt", transaction_hash)), "UTF-8");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		Transaction transaction = gson.fromJson(json, Transaction.class);
+		return transaction;
+	}
 
 }
