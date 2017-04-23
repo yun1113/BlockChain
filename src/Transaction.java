@@ -24,7 +24,7 @@ public class Transaction {
 	private long timestamp = System.currentTimeMillis() / 1000L;
 	private String signSig = null;
 	private boolean coinbase = false;
-	private String block_id = null;
+	private String block_id = "";
 
 	// coinbase
 	public Transaction(Wallet wallet, int value) {

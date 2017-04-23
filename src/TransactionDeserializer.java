@@ -33,10 +33,10 @@ public class TransactionDeserializer implements JsonDeserializer<Transaction> {
 	    final JsonArray output_jsonAddressArray = jsonObject.get("output_list").getAsJsonArray();
 	    final ArrayList<Map<String, String>> output_list = new ArrayList<Map<String, String>>();
 	    for (int i = 0; i < output_jsonAddressArray.size(); i++) {
-	      final String input = output_jsonAddressArray.get(i).getAsString();
+	      final String output = output_jsonAddressArray.get(i).getAsString();
 	      Gson gson = new Gson();
 	      Type typeOfHashMap = new TypeToken<Map<String, String>>(){}.getType();
-	      Map<String, String> newMap = gson.fromJson(json, typeOfHashMap);
+	      Map<String, String> newMap = gson.fromJson(output, typeOfHashMap);
 	      
 	      output_list.add(newMap);
 	    }
@@ -44,7 +44,7 @@ public class TransactionDeserializer implements JsonDeserializer<Transaction> {
 		final Transaction transaction = new Transaction(jsonObject.get("transcation_hash").getAsString(),
 				input_list, output_list, jsonObject.get("timestamp").getAsLong(), 
 				jsonObject.get("signsig").getAsString(), jsonObject.get("coinbase").getAsBoolean(),
-				jsonObject.get("bock_id").getAsString());
+				jsonObject.get("block_ID").getAsString());
 		return transaction;
 	}
 
