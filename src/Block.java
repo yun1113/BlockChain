@@ -22,14 +22,15 @@ public class Block {
 	private int nonce = 0;
 	private String prev_block_hash = null;
 	private Block prev_block = null;
-	private ArrayList<Transaction> transaction_list = new ArrayList<Transaction>();
+	private ArrayList<String> transaction_list = new ArrayList<String>();
 
-	public Block(Block parent_block, ArrayList<Transaction> transaction_list) {
+	public Block(Block parent_block, ArrayList<String> transaction_list) {
 		this.transaction_list = transaction_list;
 		this.prev_block = prev_block;
 
 		boolean transaction_valid = true;
-		for (Transaction trans : transaction_list) {
+		for (String t : transaction_list) {
+			Transaction trans = HandlingObj.getTransaction(t);
 			if (!validateTransactionSign(trans)) {
 				break;
 			}
@@ -46,7 +47,8 @@ public class Block {
 
 	private void generateNonce() {
 		String hash_string = prev_block_hash + timestamp;
-		for (Transaction trans : transaction_list) {
+		for (String t : transaction_list) {
+			Transaction trans = HandlingObj.getTransaction(t);
 			hash_string += trans.getTransactionHash();
 		}
 		int nonce = 0;
@@ -143,4 +145,19 @@ public class Block {
 		return nonce;
 	}
 
+	public String getBlockHash() {
+		return block_hash;
+	}
+	
+	public long getTimeStamp() {
+		return timestamp;
+	}
+	
+	public String getPrevBlockHash() {
+		return prev_block_hash;
+	}
+	
+	public ArrayList<String> getTransactionList() {
+		return transaction_list;
+	}
 }
