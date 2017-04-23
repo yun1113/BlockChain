@@ -17,12 +17,9 @@ public class WalletDeserializer implements JsonDeserializer<Wallet> {
 		
 		final JsonObject jsonObject = json.getAsJsonObject();
 	    final JsonArray jsonAddressArray = jsonObject.get("address_list").getAsJsonArray();
-	    final ArrayList<Address> address_list = new ArrayList<Address>();
+	    final ArrayList<String> address_list = new ArrayList<String>();
 	    for (int i = 0; i < jsonAddressArray.size(); i++) {
-	      final String jsonAddress = jsonAddressArray.get(i).getAsString();
-	      Gson gson = new GsonBuilder().registerTypeAdapter(Address.class, new AddressDeserializer())
-	                .create();
-	      Address address = gson.fromJson(jsonAddress, Address.class);
+	      final String address = jsonAddressArray.get(i).getAsString();
 	      address_list.add(address);
 	    }
 		

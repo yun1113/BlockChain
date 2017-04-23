@@ -24,13 +24,10 @@ public class WalletSerializer implements JsonSerializer<Wallet> {
 		result.add("account", new JsonPrimitive(wallet.getAccount()));
 
 		JsonArray jsonArray = new JsonArray();
-		ArrayList<Address> address_list = wallet.getAddresses();
+		ArrayList<String> address_list = wallet.getAddresses();
 		if (address_list != null) {
-			for (Address value : address_list) {
-				Gson gson = new GsonBuilder().registerTypeAdapter(Address.class, new AddressSerializer())
-		                .create();
-				String address = gson.toJson(value);
-				jsonArray.add(new JsonPrimitive(address));
+			for (String value : address_list) {
+				jsonArray.add(new JsonPrimitive(value));
 			}
 			result.add("address_list", jsonArray);
 		}

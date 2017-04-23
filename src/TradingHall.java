@@ -177,7 +177,7 @@ public class TradingHall {
 				System.out.println(wallet.getTotalValue());
 				break;
 			case 2:
-				ArrayList<Address> addr_list = wallet.getAddresses();
+				ArrayList<Address> addr_list = wallet.getRealAddressList();
 				for (Address addr : addr_list) {
 					System.out.println(addr.getAddress());
 				}

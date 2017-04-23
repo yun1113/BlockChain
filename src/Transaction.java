@@ -81,7 +81,7 @@ public class Transaction {
 	}
 
 	private void geneateInputList(Wallet wallet, int value) {
-		ArrayList<Address> address_list = wallet.getAddresses();
+		ArrayList<Address> address_list = wallet.getRealAddressList();
 		ArrayList<Map<String, String>> input_address_list = null;
 		int temp_value = value;
 		int index = 0;

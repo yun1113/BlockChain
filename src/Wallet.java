@@ -16,7 +16,7 @@ public class Wallet {
 	private String uuid = null;
 	private int address_num = 0;
 	private String account = null;
-	private ArrayList<Address> address_list = new ArrayList<Address>();
+	private ArrayList<String> address_list = new ArrayList<String>();
 
 	public Wallet(String account) {
 		this.account = account;
@@ -44,11 +44,11 @@ public class Wallet {
 
 	public Address generateNewAddress() {
 		Address new_addr = new Address(uuid);
-		address_list.add(new_addr);
+		address_list.add(new_addr.getAddress());
 		return new_addr;
 	}
 
-	public ArrayList<Address> getAddresses() {
+	public ArrayList<String> getAddresses() {
 		return address_list;
 	}
 
@@ -62,8 +62,9 @@ public class Wallet {
 
 	public int getTotalValue(){
 		int total = 0;
-		for(Address addr : address_list){
-			total += addr.getValue();
+		for(String addr : address_list){
+			Address a = HandlingObj.getAddress(addr);
+			total += a.getValue();
 		}
 		return total;
 	}
@@ -80,7 +81,16 @@ public class Wallet {
 		this.address_num = address_num;
 	}
 	
-	public void setAddressList(ArrayList<Address> address_list){
+	public void setAddressList(ArrayList<String> address_list){
 		this.address_list = address_list;
+	}
+	
+	public ArrayList<Address> getRealAddressList(){
+		ArrayList<Address> addr_list = new ArrayList<Address>();
+		for(String addr: address_list){
+			Address a = HandlingObj.getAddress(addr);
+			addr_list.add(a);
+		}
+		return addr_list;
 	}
 }
