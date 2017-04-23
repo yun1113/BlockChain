@@ -24,7 +24,7 @@ public class BlockDeserializer implements JsonDeserializer<Block> {
 
 		final Block block = new Block(jsonObject.get("block_hash").getAsString(),
 				jsonObject.get("timestamp").getAsLong(), jsonObject.get("nonce").getAsInt(),
-				jsonObject.get("prev_block_hash").getAsString(), transaction_list);
+				jsonObject.get("prev_block_hash").getAsString(), transaction_list, jsonObject.get("next_block_hash").getAsString());
 		return block;
 	}
 

@@ -22,6 +22,7 @@ public class Block {
 	private int nonce = 0;
 	private String prev_block_hash = null;
 	private ArrayList<String> transaction_list = new ArrayList<String>();
+	private String next_block_hash = "";
 
 	public Block(String prev_block_hash, ArrayList<String> transaction_list) {
 		this.transaction_list = transaction_list;
@@ -46,12 +47,13 @@ public class Block {
 	}
 
 	public Block(String block_hash, long timestamp, int nonce, String prev_block_hash,
-			ArrayList<String> transaction_list) {
+			ArrayList<String> transaction_list, String next_block_hash) {
 		this.block_hash = block_hash;
 		this.timestamp = timestamp;
 		this.nonce = nonce;
 		this.prev_block_hash = prev_block_hash;
 		this.transaction_list = transaction_list;
+		this.next_block_hash = next_block_hash;
 	}
 
 	// first block
@@ -176,5 +178,13 @@ public class Block {
 
 	public ArrayList<String> getTransactionList() {
 		return transaction_list;
+	}
+	
+	public void setNextBlockHash(String next_block_hash){
+		this.next_block_hash = next_block_hash;
+	}
+	
+	public String getNextBlockHash(){
+		return next_block_hash;
 	}
 }

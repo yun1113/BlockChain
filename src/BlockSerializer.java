@@ -17,6 +17,7 @@ public class BlockSerializer implements JsonSerializer<Block> {
 		result.add("timestamp", new JsonPrimitive(block.getTimeStamp()));
 		result.add("nonce", new JsonPrimitive(block.getNonce()));
 		result.add("prev_block_hash", new JsonPrimitive(block.getPrevBlockHash()));
+		result.add("next_block_hash", new JsonPrimitive(block.getNextBlockHash()));
 
 		JsonArray jsonArray = new JsonArray();
 		ArrayList<String> transaction_list = block.getTransactionList();
