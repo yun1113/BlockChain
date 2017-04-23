@@ -24,6 +24,7 @@ public class Transaction {
 	private long timestamp = System.currentTimeMillis() / 1000L;
 	private String signSig = null;
 	private boolean coinbase = false;
+	private String block_id = null;
 
 	// coinbase
 	public Transaction(Wallet wallet, int value) {
@@ -44,13 +45,15 @@ public class Transaction {
 	}
 
 	public Transaction(String transcation_hash, ArrayList<Map<String, String>> input_list,
-			ArrayList<Map<String, String>> output_list, long timestamp, String signSig, boolean coinbase) {
+			ArrayList<Map<String, String>> output_list, long timestamp, String signSig, boolean coinbase,
+			String block_id) {
 		this.transcation_hash = transcation_hash;
 		this.input_list = input_list;
 		this.output_list = output_list;
 		this.timestamp = timestamp;
 		this.signSig = signSig;
 		this.coinbase = coinbase;
+		this.block_id = block_id;
 	}
 
 	public Map<String, String> transaction_detail(int value, String address) {
@@ -195,5 +198,10 @@ public class Transaction {
 	public ArrayList<Map<String, String>> getOutputList() {
 		return output_list;
 	}
+	
+	public String getBlockID() {
+		return block_id;
+	}
 
+	
 }

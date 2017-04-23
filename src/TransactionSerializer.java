@@ -20,6 +20,7 @@ public class TransactionSerializer implements JsonSerializer<Transaction> {
 		result.add("timestamp", new JsonPrimitive(transaction.getTimestamp()));
 		result.add("signsig", new JsonPrimitive(transaction.getSignSig()));
 		result.add("coinbase", new JsonPrimitive(transaction.getCoinBase()));
+		result.add("block_ID", new JsonPrimitive(transaction.getBlockID()));
 		
 		JsonArray jsonArray = new JsonArray();
 		ArrayList<Map<String, String>> input_list = transaction.getInputList();

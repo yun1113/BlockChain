@@ -43,7 +43,8 @@ public class TransactionDeserializer implements JsonDeserializer<Transaction> {
 	    
 		final Transaction transaction = new Transaction(jsonObject.get("transcation_hash").getAsString(),
 				input_list, output_list, jsonObject.get("timestamp").getAsLong(), 
-				jsonObject.get("signsig").getAsString(), jsonObject.get("coinbase").getAsBoolean());
+				jsonObject.get("signsig").getAsString(), jsonObject.get("coinbase").getAsBoolean(),
+				jsonObject.get("bock_id").getAsString());
 		return transaction;
 	}
 
