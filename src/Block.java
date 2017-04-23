@@ -45,6 +45,15 @@ public class Block {
 		}
 	}
 
+	public Block(String block_hash, long timestamp, int nonce, String prev_block_hash,
+			ArrayList<String> transaction_list) {
+		this.block_hash = block_hash;
+		this.timestamp = timestamp;
+		this.nonce = nonce;
+		this.prev_block_hash = prev_block_hash;
+		this.transaction_list = transaction_list;
+	}
+
 	private void generateNonce() {
 		String hash_string = prev_block_hash + timestamp;
 		for (String t : transaction_list) {
@@ -148,15 +157,15 @@ public class Block {
 	public String getBlockHash() {
 		return block_hash;
 	}
-	
+
 	public long getTimeStamp() {
 		return timestamp;
 	}
-	
+
 	public String getPrevBlockHash() {
 		return prev_block_hash;
 	}
-	
+
 	public ArrayList<String> getTransactionList() {
 		return transaction_list;
 	}

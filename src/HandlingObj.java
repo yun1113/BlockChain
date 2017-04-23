@@ -88,5 +88,32 @@ public class HandlingObj {
 		Transaction transaction = gson.fromJson(json, Transaction.class);
 		return transaction;
 	}
+	
+	public static void savingBlock(Block block){
+		Gson gson = new GsonBuilder().registerTypeAdapter(Transaction.class, new TransactionSerializer())
+                .create();
+		String json = gson.toJson(block);
+		try {
+			FileUtils.write(new File(String.format("./data/block/%s.txt", block.getPrevBlockHash())), json, "UTF-8", false);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static Block getBlcok(String block_hash){
+		Gson gson = new GsonBuilder().registerTypeAdapter(Transaction.class, new TransactionDeserializer())
+                .create();
+		
+		String json = null;
+		try {
+			json = FileUtils.readFileToString(new File(String.format("./data/block/%s.txt", block_hash)), "UTF-8");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		Block block = gson.fromJson(json, Block.class);
+		return block;
+	}
 
 }
