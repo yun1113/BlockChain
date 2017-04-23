@@ -65,6 +65,7 @@ public class Transaction {
 			for (Map<String, String> map : input_list) {
 				String addr_string = map.get("address");
 				Address addr = HandlingObj.getAddress(addr_string);
+				addr.setValue(0);
 				addr.addTransaction(transcation_hash);
 				HandlingObj.savingAddress(addr);
 			}
@@ -82,7 +83,6 @@ public class Transaction {
 
 	private void geneateInputList(Wallet wallet, int value) {
 		ArrayList<Address> address_list = wallet.getRealAddressList();
-		ArrayList<Map<String, String>> input_address_list = null;
 		int temp_value = value;
 		int index = 0;
 
@@ -90,7 +90,8 @@ public class Transaction {
 			if (addr.getValue() > 0) {
 				int change = addr.getValue() - temp_value;
 				if (change > 0) {
-					input_address_list.add(transaction_detail(addr.getValue(), addr.getAddress()));
+					Map<String, String> m = transaction_detail(addr.getValue(), addr.getAddress());
+					input_list.add(m);
 					addr.setValue(0);
 					// give change to self
 					Address new_addr = wallet.generateNewAddress();
@@ -100,11 +101,11 @@ public class Transaction {
 					HandlingObj.savingAddress(new_addr);
 					break;
 				} else if (change == 0) {
-					input_address_list.add(transaction_detail(addr.getValue(), addr.getAddress()));
+					input_list.add(transaction_detail(addr.getValue(), addr.getAddress()));
 					addr.setValue(0);
 					break;
 				} else {
-					input_address_list.add(transaction_detail(addr.getValue(), addr.getAddress()));
+					input_list.add(transaction_detail(addr.getValue(), addr.getAddress()));
 					addr.setValue(0);
 					temp_value = change;
 				}
