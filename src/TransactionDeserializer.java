@@ -25,7 +25,7 @@ public class TransactionDeserializer implements JsonDeserializer<Transaction> {
 	      final String input = jsonAddressArray.get(i).getAsString();
 	      Gson gson = new Gson();
 	      Type typeOfHashMap = new TypeToken<Map<String, String>>(){}.getType();
-	      Map<String, String> newMap = gson.fromJson(json, typeOfHashMap);
+	      Map<String, String> newMap = gson.fromJson(input, typeOfHashMap);
 	      
 	      input_list.add(newMap);
 	    }
