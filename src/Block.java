@@ -44,6 +44,7 @@ public class Block {
 			System.out.println("Transaciton Invalid");
 		}
 		updateTransaction();
+		updatePrevBlock();
 	}
 
 	public Block(String block_hash, long timestamp, int nonce, String prev_block_hash,
@@ -64,6 +65,12 @@ public class Block {
 		updateTransaction();
 	}
 
+	private void updatePrevBlock() {
+		Block block = HandlingObj.getBlcok(prev_block_hash);
+		block.setNextBlockHash(block_hash);
+		HandlingObj.savingBlock(block);
+	}
+	
 	private void updateTransaction() {
 		for (String t : transaction_list) {
 			Transaction trans = HandlingObj.getTransaction(t);
