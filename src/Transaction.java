@@ -25,16 +25,26 @@ public class Transaction {
 	private String signSig = null;
 	private boolean coinbase = false;
 
+	// coinbase
+	public Transaction(Wallet wallet, int value) {
+		Address coinbase = wallet.generateNewAddress();
+		HandlingObj.savingAddress(coinbase);
+		output_list.add(transaction_detail(value, coinbase.getAddress()));
+		signTransaction();
+		updateRelatedAddress();
+		this.coinbase = true;
+		HandlingObj.savingWallet(wallet);
+	}
+
 	public Transaction(Wallet wallet, Address output_address, int value) {
 		output_list.add(transaction_detail(value, output_address.getAddress()));
 		geneateInputList(wallet, value);
 		signTransaction();
 		updateRelatedAddress();
 	}
-	
+
 	public Transaction(String transcation_hash, ArrayList<Map<String, String>> input_list,
-			ArrayList<Map<String, String>> output_list, long timestamp,  String signSig, 
-			boolean coinbase) {
+			ArrayList<Map<String, String>> output_list, long timestamp, String signSig, boolean coinbase) {
 		this.transcation_hash = transcation_hash;
 		this.input_list = input_list;
 		this.output_list = output_list;
@@ -51,17 +61,22 @@ public class Transaction {
 	}
 
 	private void updateRelatedAddress() {
-		for (Map<String, String> map : input_list) {
-			String addr_string = map.get("address");
-			Address addr = HandlingObj.getAddress(addr_string);
-			addr.addTransaction(transcation_hash);
-			HandlingObj.savingAddress(addr);
+		if (input_list.size() != 0) {
+			for (Map<String, String> map : input_list) {
+				String addr_string = map.get("address");
+				Address addr = HandlingObj.getAddress(addr_string);
+				addr.addTransaction(transcation_hash);
+				HandlingObj.savingAddress(addr);
+			}
 		}
-		for (Map<String, String> map : output_list) {
-			String addr_string = map.get("address");
-			Address addr = HandlingObj.getAddress(addr_string); 
-			addr.addTransaction(transcation_hash);
-			HandlingObj.savingAddress(addr);
+		if (output_list.size() != 0) {
+			for (Map<String, String> map : output_list) {
+				String addr_string = map.get("address");
+				Address addr = HandlingObj.getAddress(addr_string);
+				addr.addTransaction(transcation_hash);
+				addr.setValue(Integer.parseInt(map.get("value")));
+				HandlingObj.savingAddress(addr);
+			}
 		}
 	}
 
@@ -99,8 +114,13 @@ public class Transaction {
 	}
 
 	public void signTransaction() {
-		String first_addr = input_list.get(0).get("address");
-		Address addr = HandlingObj.getAddress(first_addr);
+		String sign_addr = null;
+		try {
+			sign_addr = input_list.get(0).get("address");
+		} catch (IndexOutOfBoundsException e) {
+			sign_addr = output_list.get(0).get("address");
+		}
+		Address addr = HandlingObj.getAddress(sign_addr);
 		String sign_pri_key = addr.getPrivateKey();
 
 		String hash_string = "";
@@ -151,28 +171,28 @@ public class Transaction {
 		// TODO
 	}
 
-	public String getTransactionHash(){
+	public String getTransactionHash() {
 		return transcation_hash;
 	}
-	
-	public long getTimestamp(){
+
+	public long getTimestamp() {
 		return timestamp;
 	}
-	
-	public String getSignSig(){
+
+	public String getSignSig() {
 		return signSig;
 	}
-	
-	public boolean getCoinBase(){
+
+	public boolean getCoinBase() {
 		return coinbase;
 	}
-	
-	public ArrayList<Map<String, String>> getInputList(){
+
+	public ArrayList<Map<String, String>> getInputList() {
 		return input_list;
 	}
-	
+
 	public ArrayList<Map<String, String>> getOutputList() {
 		return output_list;
 	}
-	
+
 }

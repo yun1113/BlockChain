@@ -213,6 +213,7 @@ public class TradingHall {
 				
 				if(wallet.getTotalValue()>=output_value){
 					Transaction trans = new Transaction(wallet, output_address, output_value);
+					HandlingObj.savingTransaction(trans);
 				}
 				else{
 					System.out.println("You do not have enough money");
