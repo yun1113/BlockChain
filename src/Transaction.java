@@ -150,7 +150,7 @@ public class Transaction {
 			// generate signature
 			Signature ecdsaSign = Signature.getInstance("SHA256withECDSA", "BC");
 			ecdsaSign.initSign(pk2);
-			ecdsaSign.update(hash_string.getBytes("UTF-8"));
+			ecdsaSign.update(transcation_hash.getBytes("UTF-8"));
 			byte[] signature = ecdsaSign.sign();
 			this.signSig = Base64.getEncoder().encodeToString(signature);
 		} catch (NoSuchAlgorithmException | NoSuchProviderException e) {
