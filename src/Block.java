@@ -97,9 +97,10 @@ public class Block {
 		if (trans.getCoinBase()) {
 			return true;
 		} else {
-			String addr = trans.getInputList().get(1).get("address");
+			String addr = trans.getInputList().get(0).get("address");
 			Address a = HandlingObj.getAddress(addr);
-			Transaction t = HandlingObj.getTransaction(a.getTransactionList().get(-2));
+			ArrayList<String> addr_trans = a.getTransactionList();
+			Transaction t = HandlingObj.getTransaction(addr_trans.get(addr_trans.size()-2));
 			if (validateTransactionOrigin(t)) {
 				return true;
 			} else {
