@@ -94,7 +94,7 @@ public class HandlingObj {
                 .create();
 		String json = gson.toJson(block);
 		try {
-			FileUtils.write(new File(String.format("./data/block/%s.txt", block.getPrevBlockHash())), json, "UTF-8", false);
+			FileUtils.write(new File(String.format("./data/block/%s.txt", block.getBlockHash())), json, "UTF-8", false);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

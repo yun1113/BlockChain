@@ -17,16 +17,15 @@ import org.apache.commons.codec.digest.DigestUtils;
 public class Block {
 
 	private String block_hash = null;
-	private String difficulty = "000"; // sha256 hash need three 0 aheads
+	private String difficulty = "000"; // sha256 hash need three 0s ahead
 	private long timestamp = System.currentTimeMillis() / 1000L;
 	private int nonce = 0;
 	private String prev_block_hash = null;
-	private Block prev_block = null;
 	private ArrayList<String> transaction_list = new ArrayList<String>();
 
-	public Block(Block parent_block, ArrayList<String> transaction_list) {
+	public Block(String prev_block_hash, ArrayList<String> transaction_list) {
 		this.transaction_list = transaction_list;
-		this.prev_block = prev_block;
+		this.prev_block_hash = prev_block_hash;
 
 		boolean transaction_valid = true;
 		for (String t : transaction_list) {
@@ -43,6 +42,7 @@ public class Block {
 		} else {
 			System.out.println("Transaciton Invalid");
 		}
+		updateTransaction();
 	}
 
 	public Block(String block_hash, long timestamp, int nonce, String prev_block_hash,
@@ -52,6 +52,22 @@ public class Block {
 		this.nonce = nonce;
 		this.prev_block_hash = prev_block_hash;
 		this.transaction_list = transaction_list;
+	}
+
+	// first block
+	public Block(String first_trans) {
+		this.prev_block_hash = "0000000000000000000000000000000000000000000000000000000000000000";
+		transaction_list.add(first_trans);
+		generateNonce();
+		updateTransaction();
+	}
+
+	private void updateTransaction() {
+		for (String t : transaction_list) {
+			Transaction trans = HandlingObj.getTransaction(t);
+			trans.setBlockID(block_hash);
+			HandlingObj.savingTransaction(trans);
+		}
 	}
 
 	private void generateNonce() {
@@ -72,14 +88,6 @@ public class Block {
 			}
 			nonce += 1;
 		}
-	}
-
-	private void generateHashPrevBlock(Block prev_block) {
-		String hash_string = prev_block.getHashPrevBlock() + prev_block.getTime()
-				+ Integer.toString(prev_block.getNonce());
-		String sha256hex = DigestUtils.sha256Hex(hash_string);
-		String double_sha256hex = DigestUtils.sha256Hex(sha256hex);
-		this.prev_block_hash = double_sha256hex;
 	}
 
 	// traceback to coint origin

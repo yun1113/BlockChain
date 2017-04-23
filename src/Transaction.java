@@ -202,6 +202,10 @@ public class Transaction {
 	public String getBlockID() {
 		return block_id;
 	}
+	
+	public void setBlockID(String block_id) {
+		this.block_id = block_id;
+	}
 
 	
 }
