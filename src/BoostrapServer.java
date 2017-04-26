@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.io.DataInputStream;
@@ -23,9 +24,14 @@ public class BoostrapServer {
 	private int NEIGHBOR_NUMBER = 2;
 
 	public static void main(String[] args) {
-
 		BoostrapServer bs = new BoostrapServer();
 		bs.excute();
+	}
+	
+	private void list_peer_status(){
+		for (HandleAClient i : client_list) {
+			System.out.println(i.getConnectionDisplay() + " active");
+		}
 	}
 
 	public BoostrapServer() {
@@ -33,27 +39,51 @@ public class BoostrapServer {
 	}
 
 	public void excute() {
-		// set server portNumber and chatPerson
-		try {
-			addr = InetAddress.getByName("127.0.0.1");
-			server = new ServerSocket(10000, CONECTION_SIZE, addr);
-		} catch (IOException io) {
-			io.printStackTrace();
-			System.exit(1);
-		}
-
-		// Server wait client for connection
-		for (int i = 0; i < CONECTION_SIZE; i++) {
-			try {
-				client_list.add(new HandleAClient(server.accept(), i));
-				es.execute(client_list.get(i));
-			} catch (IOException io) {
-				io.printStackTrace();
-				System.exit(1);
+		es.execute(new WaitConnectionThread());
+		Scanner scanner = new Scanner(System.in);
+		boolean exit_page = false;
+		while (!exit_page) {
+			System.out.println("========================================");
+			System.out.println("=            BoostrapServer            =");
+			System.out.println("========================================");
+			System.out.print("1. List peer status\n");
+			int user_action = scanner.nextInt();
+			if(user_action == 1){
+				list_peer_status();
+			}
+			else{
+				System.out.print("Wrong Input");
 			}
 		}
 	}
 
+	class WaitConnectionThread implements Runnable {
+
+		@Override
+		public void run() {
+			// set server portNumber and chatPerson
+			try {
+				addr = InetAddress.getByName("127.0.0.1");
+				server = new ServerSocket(10000, CONECTION_SIZE, addr);
+			} catch (IOException io) {
+				io.printStackTrace();
+				System.exit(1);
+			}
+
+			// Server wait client for connection
+			for (int i = 0; i < CONECTION_SIZE; i++) {
+				try {
+					client_list.add(new HandleAClient(server.accept(), i));
+					es.execute(client_list.get(i));
+				} catch (IOException io) {
+					io.printStackTrace();
+					System.exit(1);
+				}
+			}
+			
+		}
+		
+	}
 	// Inner class
 	// Define he thread class for handling new connection
 	class HandleAClient implements Runnable {
@@ -92,11 +122,11 @@ public class BoostrapServer {
 						// remove self and get random
 						connection_list.remove(self_display);
 						Collections.shuffle(connection_list);
-						
+
 						String json;
-						if(connection_list.size() < NEIGHBOR_NUMBER){
+						if (connection_list.size() < NEIGHBOR_NUMBER) {
 							json = new Gson().toJson(connection_list);
-						}else{
+						} else {
 							json = new Gson().toJson(connection_list.subList(0, 2));
 						}
 						outputToClient.writeUTF(json);
