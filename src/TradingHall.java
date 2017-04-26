@@ -26,13 +26,15 @@ import com.google.gson.reflect.TypeToken;
 public class TradingHall {
 	public ArrayList<String> neighbor_list = new ArrayList<String>();
 	private ArrayList<HandlePeerClient> client_list = new ArrayList<HandlePeerClient>();
-	private ExecutorService worker;
-	private ExecutorService es = Executors.newFixedThreadPool(20);;
+	private ExecutorService main_worker = Executors.newFixedThreadPool(5);;
+	private ExecutorService broadcast_worker = Executors.newFixedThreadPool(20);;
 	private ServerSocket server;
 	private InetAddress addr;
 	private int CONECTION_SIZE = 20;
 	private int NEIGHBOR_NUMBER = 2;
 	private int TTL = 5;
+	private ArrayList<String> trans_list = new ArrayList<String>();
+	private String prev_block_hash;
 
 	public static void main(String[] args) {
 
@@ -97,8 +99,8 @@ public class TradingHall {
 	}
 
 	public TradingHall() {
-		worker = Executors.newFixedThreadPool(20);
-		worker.execute(new PeerServer());
+		main_worker.execute(new PeerServer());
+		main_worker.execute(new Miner());
 	}
 
 	private static String signUp() {
@@ -265,13 +267,40 @@ public class TradingHall {
 		}
 	}
 
+	class Miner implements Runnable {
+		
+		@Override
+		public void run() {
+			while (trans_list.size() < 3) {
+				try {
+					Thread.sleep(60000); // 1 min
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+			Block block = new Block(prev_block_hash, trans_list);
+			HandlingObj.savingBlock(block);
+
+			String content = "";
+			try {
+				content = FileUtils.readFileToString(new File(String.format("./data/block/%s.txt", block.getBlockHash())), "UTF-8");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			broadcast_worker.execute(new PeerClient(2, "Block", content)); // broadcast
+		}
+	}
+
 	// Define he thread class for receive message
 	class PeerServer implements Runnable {
 
 		private String serverIP = "127.0.0.1";
 		private int serverPort = 10000;
 		Socket socket;
-		
+
 		/** Run a thread */
 		public void run() {
 			try {
@@ -310,7 +339,7 @@ public class TradingHall {
 				for (int i = 0; i < CONECTION_SIZE; i++) {
 					try {
 						client_list.add(new HandlePeerClient(server.accept(), i));
-						es.execute(client_list.get(i));
+						broadcast_worker.execute(client_list.get(i));
 					} catch (IOException io) {
 						io.printStackTrace();
 						System.exit(1);
@@ -321,7 +350,7 @@ public class TradingHall {
 				ex.printStackTrace();
 			} catch (IOException ex) {
 				ex.printStackTrace();
-			}finally{
+			} finally {
 				try {
 					socket.close();
 				} catch (IOException e) {
@@ -357,15 +386,16 @@ public class TradingHall {
 					String json = inputFromClient.readUTF();
 					Type typeOfHashMap = new TypeToken<Map<String, String>>() {
 					}.getType();
-					Map<String, String> map = new Gson().fromJson(json, typeOfHashMap); 
+					Map<String, String> map = new Gson().fromJson(json, typeOfHashMap);
 					int ttl = Integer.parseInt(map.get("TTL")) - 1;
 					String message = map.get("message");
+					String content = map.get("content");
 
 					String self_display = peerClientIP + ":" + Integer.toString(peerClientPort);
 					if (message.equals("Hello")) {
 						System.out.println("Reveived from client: " + self_display + " Say Hello");
 						if (ttl != 0) {
-							worker.execute(new PeerClient(ttl, message)); // broadcast
+							broadcast_worker.execute(new PeerClient(ttl, message, content)); // broadcast
 						}
 					}
 					// if (sentence.equals("List")) {
@@ -419,10 +449,12 @@ public class TradingHall {
 		DataInputStream inputFromLink;
 		int ttl;
 		String message;
+		String content;
 
-		public PeerClient(int ttl, String message) {
+		public PeerClient(int ttl, String message, String content) {
 			this.ttl = ttl;
 			this.message = message;
+			this.content = content;
 		}
 
 		@Override
@@ -431,7 +463,7 @@ public class TradingHall {
 
 				// broadcast message
 				for (String neighbor : neighbor_list) {
-					
+
 					// Create a socket to connect to the peer
 					String[] parts = neighbor.split(":");
 					String ip = parts[0]; // 004
@@ -445,6 +477,7 @@ public class TradingHall {
 					Map<String, String> map = new HashMap<String, String>();
 					map.put("TTL", Integer.toString(ttl));
 					map.put("message", message);
+					map.put("content", content);
 					String json = new Gson().toJson(map);
 					outputToLink.writeUTF(json);
 				}
