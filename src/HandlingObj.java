@@ -90,7 +90,7 @@ public class HandlingObj {
 	}
 	
 	public static void savingBlock(Block block){
-		Gson gson = new GsonBuilder().registerTypeAdapter(Transaction.class, new TransactionSerializer())
+		Gson gson = new GsonBuilder().registerTypeAdapter(Block.class, new BlockSerializer())
                 .create();
 		String json = gson.toJson(block);
 		try {
@@ -101,7 +101,7 @@ public class HandlingObj {
 	}
 	
 	public static Block getBlcok(String block_hash){
-		Gson gson = new GsonBuilder().registerTypeAdapter(Transaction.class, new TransactionDeserializer())
+		Gson gson = new GsonBuilder().registerTypeAdapter(Block.class, new BlockDeserializer())
                 .create();
 		
 		String json = null;
