@@ -24,10 +24,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 public class TradingHall {
-	public ArrayList<String> neighbor_list = new ArrayList<String>();
+	public static ArrayList<String> neighbor_list = new ArrayList<String>();
 	private ArrayList<HandlePeerClient> client_list = new ArrayList<HandlePeerClient>();
 	private ExecutorService main_worker = Executors.newFixedThreadPool(5);;
-	private ExecutorService broadcast_worker = Executors.newFixedThreadPool(20);;
+	private static ExecutorService broadcast_worker = Executors.newFixedThreadPool(20);;
 	private ServerSocket server;
 	private InetAddress addr;
 	private int CONECTION_SIZE = 20;
@@ -246,6 +246,17 @@ public class TradingHall {
 				if (wallet.getTotalValue() >= output_value) {
 					Transaction trans = new Transaction(wallet, output_address, output_value);
 					HandlingObj.savingTransaction(trans);
+
+					String content = "";
+					try {
+						content = FileUtils.readFileToString(
+								new File(String.format("./data/transaction/%s.txt", trans.getTransactionHash())),
+								"UTF-8");
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					broadcast_worker.execute(new PeerClient(2, "Transaction", content)); // broadcast
 				} else {
 					System.out.println("You do not have enough money");
 				}
@@ -268,7 +279,7 @@ public class TradingHall {
 	}
 
 	class Miner implements Runnable {
-		
+
 		@Override
 		public void run() {
 			while (trans_list.size() < 3) {
@@ -285,7 +296,8 @@ public class TradingHall {
 
 			String content = "";
 			try {
-				content = FileUtils.readFileToString(new File(String.format("./data/block/%s.txt", block.getBlockHash())), "UTF-8");
+				content = FileUtils.readFileToString(
+						new File(String.format("./data/block/%s.txt", block.getBlockHash())), "UTF-8");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -315,7 +327,7 @@ public class TradingHall {
 				// Create an input stream to receive data from server
 				DataInputStream inputFromServer = new DataInputStream(socket.getInputStream());
 				String server_return_list = inputFromServer.readUTF();
-				System.out.println("Server Response: " + server_return_list);
+				// System.out.println("Server Response: " + server_return_list);
 
 				// get neighbor list
 				neighbor_list = new Gson().fromJson(server_return_list, new TypeToken<ArrayList<String>>() {
@@ -392,12 +404,33 @@ public class TradingHall {
 					String content = map.get("content");
 
 					String self_display = peerClientIP + ":" + Integer.toString(peerClientPort);
-					if (message.equals("Hello")) {
-						System.out.println("Reveived from client: " + self_display + " Say Hello");
-						if (ttl != 0) {
-							broadcast_worker.execute(new PeerClient(ttl, message, content)); // broadcast
+					if (message.equals("Transaction")) {
+						System.out.println("Reveived from client: " + self_display + " send Transaction data");
+
+						// content to transaction and save
+						Gson gson = new GsonBuilder()
+								.registerTypeAdapter(Transaction.class, new TransactionDeserializer()).create();
+						Transaction transaction = gson.fromJson(content, Transaction.class);
+						HandlingObj.savingTransaction(transaction);
+
+						// if not repeat, add to transaction list
+						if (trans_list.indexOf(transaction.getTransactionHash()) != -1) {
+							trans_list.add(transaction.getTransactionHash());
 						}
+					} else if (message.equals("Block")) {
+						System.out.println("Reveived from client: " + self_display + " send Block data");
+
+						// content to block and save
+						Gson gson = new GsonBuilder()
+								.registerTypeAdapter(Block.class, new BlockDeserializer()).create();
+						Block block = gson.fromJson(content, Block.class);
+						HandlingObj.savingBlock(block);
 					}
+					
+					if (ttl != 0) {
+						broadcast_worker.execute(new PeerClient(ttl, message, content)); // broadcast
+					}
+
 					// if (sentence.equals("List")) {
 					// System.out.println("Reveived from client: " +
 					// self_display + " List Request");
@@ -443,7 +476,7 @@ public class TradingHall {
 	}
 
 	// Define he thread class for broadcast message
-	class PeerClient implements Runnable {
+	static class PeerClient implements Runnable {
 		Socket socket;
 		DataOutputStream outputToLink;
 		DataInputStream inputFromLink;
