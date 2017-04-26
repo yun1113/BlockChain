@@ -79,6 +79,15 @@ public class Block {
 		}
 	}
 
+	public Block(String block_hash, long timestamp, int nonce, String prev_block_hash,
+			ArrayList<String> transaction_list) {
+		this.block_hash = block_hash;
+		this.timestamp = timestamp;
+		this.nonce = nonce;
+		this.prev_block_hash = prev_block_hash;
+		this.transaction_list = transaction_list;
+	}
+
 	private void generateNonce() {
 		String hash_string = prev_block_hash + timestamp;
 		for (String t : transaction_list) {
