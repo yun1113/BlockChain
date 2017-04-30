@@ -35,7 +35,7 @@ public class TradingHall {
 	private int NEIGHBOR_NUMBER = 2;
 	private static int TTL = 2;
 	private ArrayList<String> trans_list = new ArrayList<String>();
-	private String first_block_hash = "000febab7dbd0a466fbc958e0a063642bfa7201bcb89b6687d753cae28024c50";
+	private static String first_block_hash = "000febab7dbd0a466fbc958e0a063642bfa7201bcb89b6687d753cae28024c50";
 	private int TRANSACTION_NUM_IN_BLOCK = 1;
 
 	public static void main(String[] args) {
@@ -52,7 +52,8 @@ public class TradingHall {
 			System.out.println("========================================");
 			System.out.println("=        Welcome to Trading Hall       =");
 			System.out.println("========================================");
-			System.out.print("1. Sign Up\n" + "2. Log in\n" + "3. Exit\n" + "4. Test\n");
+			System.out.print("1. Sign Up\n" + "2. Log in\n" + "3. List Block\n" + "4. Watch Block Data\n" + "5. Exit\n"
+					+ "6. Test\n");
 			int user_action = scanner.nextInt();
 
 			switch (user_action) {
@@ -69,9 +70,41 @@ public class TradingHall {
 					exit_page = true;
 				}
 				break;
-			case 3: // Exit
-				System.exit(0);
+			case 3:
+				String block_hash = first_block_hash;
+				Block b = null;
+				int counter = 1;
+				while (true) {
+					System.out.println(counter + " : " + block_hash);
+					b = HandlingObj.getBlcok(block_hash);
+					if (b.getNextBlockHash().equals("")) {
+						break;
+					}
+					block_hash = b.getNextBlockHash();
+					counter += 1;
+				}
+				break;
 			case 4:
+				String block_id = "";
+				System.out.println("Input block ID:");
+				while (block_id.equals("")) {
+					block_id = scanner.nextLine();
+				}
+				Block block = HandlingObj.getBlcok(block_id);
+				System.out.println("Block ID: " + block.getBlockHash());
+				System.out.println("Prev Block ID: " + block.getHashPrevBlock());
+				if (!block.getNextBlockHash().equals("")) {
+					System.out.println("Next Block ID: " + block.getNextBlockHash());
+				}
+				System.out.println("Transacion list");
+				for (String i : block.getTransactionList()) {
+					System.out.println(i);
+				}
+
+				break;
+			case 5: // Exit
+				System.exit(0);
+			case 6:
 				Wallet w = HandlingObj.getWallet("7948f4a1-fbb0-4e7a-bd40-a445648758d8");
 				Address output_address = HandlingObj.getAddress("mnA2RVLrorxkTvPNs12PGtT2X6rbrimMCG");
 
@@ -328,8 +361,7 @@ public class TradingHall {
 			String prev_block_hash = get_prev_block();
 			Block prev_block = HandlingObj.getBlcok(prev_block_hash);
 			Block block = new Block(prev_block_hash, trans_list);
-			
-			
+
 			if (prev_block.getNextBlockHash().equals("")) {
 				HandlingObj.savingBlock(block);
 
