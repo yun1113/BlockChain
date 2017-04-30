@@ -24,12 +24,9 @@ public class AddressDeserializer implements JsonDeserializer<Address> {
 	      transaction_list.add(transaction);
 	    }
 		
-		final Address address = new Address(jsonObject.get("wallet_id").getAsString());
-		address.setAddress(jsonObject.get("address").getAsString());
-		address.setPublicKey(jsonObject.get("pub_key").getAsString());
-		address.setPrivateKey(jsonObject.get("pri_key").getAsString());
-		address.setValue(jsonObject.get("value").getAsInt());
-		address.setTransactionList(transaction_list);
+		final Address address = new Address(jsonObject.get("wallet_id").getAsString(), jsonObject.get("address").getAsString(),
+				jsonObject.get("pub_key").getAsString(), jsonObject.get("pri_key").getAsString(),
+				jsonObject.get("value").getAsInt(), transaction_list);
 		return address;
 	}
 

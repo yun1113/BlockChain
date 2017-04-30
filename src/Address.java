@@ -32,6 +32,15 @@ public class Address {
 		this.wallet_id = wallet_id;
 	}
 	
+	public Address(String wallet_id, String address, String pub_key, String pri_key, int value, ArrayList<String> transaction_list) {
+		this.wallet_id = wallet_id;
+		this.address =address;
+		this.pub_key = pub_key;
+		this.pri_key = pri_key;
+		this.value = value;
+		this.transaction_list = transaction_list;
+	}
+	
 	
 	private void generateAddress() {
 		try {
