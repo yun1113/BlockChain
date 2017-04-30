@@ -64,7 +64,7 @@ public class BoostrapServer {
 			// set server portNumber and chatPerson
 			try {
 				addr = InetAddress.getByName("127.0.0.1");
-				server = new ServerSocket(10000, CONECTION_SIZE, addr);
+				server = new ServerSocket(20000, CONECTION_SIZE, addr);
 			} catch (IOException io) {
 				io.printStackTrace();
 				System.exit(1);

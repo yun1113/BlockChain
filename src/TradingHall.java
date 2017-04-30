@@ -32,7 +32,7 @@ public class TradingHall {
 	private InetAddress addr;
 	private int CONECTION_SIZE = 20;
 	private int NEIGHBOR_NUMBER = 2;
-	private int TTL = 5;
+	private static int TTL = 2;
 	private ArrayList<String> trans_list = new ArrayList<String>();
 	private String prev_block_hash;
 
@@ -98,6 +98,7 @@ public class TradingHall {
 		}
 	}
 
+	// initial
 	public TradingHall() {
 		main_worker.execute(new PeerServer());
 		main_worker.execute(new Miner());
@@ -256,7 +257,7 @@ public class TradingHall {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					broadcast_worker.execute(new PeerClient(2, "Transaction", content)); // broadcast
+					broadcast_worker.execute(new PeerClient(TTL, "Transaction", content)); // broadcast
 				} else {
 					System.out.println("You do not have enough money");
 				}
@@ -302,7 +303,7 @@ public class TradingHall {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			broadcast_worker.execute(new PeerClient(2, "Block", content)); // broadcast
+			broadcast_worker.execute(new PeerClient(TTL, "Block", content)); // broadcast
 		}
 	}
 
@@ -310,7 +311,7 @@ public class TradingHall {
 	class PeerServer implements Runnable {
 
 		private String serverIP = "127.0.0.1";
-		private int serverPort = 10000;
+		private int serverPort = 20000;
 		Socket socket;
 
 		/** Run a thread */
