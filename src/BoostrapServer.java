@@ -1,10 +1,12 @@
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,10 +15,13 @@ import java.util.Collections;
 import java.util.Date;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class BoostrapServer {
 
 	private ArrayList<HandleAClient> client_list = new ArrayList<HandleAClient>();
+	private ArrayList<String> connection_list = new ArrayList<String>();
+	private ArrayList<String> log_list = new ArrayList<String>();
 	private ExecutorService es;
 	private ServerSocket server;
 	private InetAddress addr;
@@ -27,10 +32,16 @@ public class BoostrapServer {
 		BoostrapServer bs = new BoostrapServer();
 		bs.excute();
 	}
+
+	private void list_peer_status() {
+		for (String i : connection_list) {
+			System.out.println(i + " active");
+		}
+	}
 	
-	private void list_peer_status(){
-		for (HandleAClient i : client_list) {
-			System.out.println(i.getConnectionDisplay() + " active");
+	private void list_log() {
+		for (String i : log_list) {
+			System.out.println(i);
 		}
 	}
 
@@ -46,12 +57,14 @@ public class BoostrapServer {
 			System.out.println("========================================");
 			System.out.println("=            BoostrapServer            =");
 			System.out.println("========================================");
-			System.out.print("1. List peer status\n");
+			System.out.print("1. List peer status\n" + "2. Log\n");
 			int user_action = scanner.nextInt();
-			if(user_action == 1){
+			if (user_action == 1) {
 				list_peer_status();
-			}
-			else{
+			} 
+			else if (user_action == 2) {
+				list_log();
+			} else {
 				System.out.print("Wrong Input");
 			}
 		}
@@ -80,10 +93,11 @@ public class BoostrapServer {
 					System.exit(1);
 				}
 			}
-			
+
 		}
-		
+
 	}
+
 	// Inner class
 	// Define he thread class for handling new connection
 	class HandleAClient implements Runnable {
@@ -110,26 +124,35 @@ public class BoostrapServer {
 					String sentence = inputFromClient.readUTF();
 					String self_display = clientIP + ":" + Integer.toString(clientPort);
 					if (sentence.equals("List")) {
-						System.out.println("Reveived from client: " + self_display + " List Request");
-
-						ArrayList<String> connection_list = new ArrayList<String>();
-						for (HandleAClient i : client_list) {
-							if (i != null) {
-								connection_list.add(i.getConnectionDisplay());
-							}
+						log_list.add("Reveived from client: " + self_display + " List Request");
+						if (!connection_list.contains(self_display)){
+							connection_list.add(self_display);
 						}
+						
+						ArrayList<String> con_list = new ArrayList<String>(connection_list);
 
 						// remove self and get random
-						connection_list.remove(self_display);
-						Collections.shuffle(connection_list);
+						con_list.remove(self_display);
+						Collections.shuffle(con_list);
 
 						String json;
-						if (connection_list.size() < NEIGHBOR_NUMBER) {
-							json = new Gson().toJson(connection_list);
+						if (con_list.size() < NEIGHBOR_NUMBER) {
+							json = new Gson().toJson(con_list);
 						} else {
-							json = new Gson().toJson(connection_list.subList(0, 2));
+							json = new Gson().toJson(con_list.subList(0, 2));
 						}
 						outputToClient.writeUTF(json);
+					} else {
+						Type typeOfHashMap = new TypeToken<Map<String, String>>() {
+						}.getType();
+						Map<String, String> map = new Gson().fromJson(sentence, typeOfHashMap);
+						String message = map.get("message");
+						String content = map.get("content");
+
+						log_list.add("Reveived from client: " + self_display + " send " + message + " data");
+						if(message.equals("Exit")){
+							connection_list.remove(content);
+						}
 					}
 				}
 			} catch (IOException e) {

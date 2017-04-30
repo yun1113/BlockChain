@@ -26,15 +26,17 @@ import com.google.gson.reflect.TypeToken;
 public class TradingHall {
 	public static ArrayList<String> neighbor_list = new ArrayList<String>();
 	private ArrayList<HandlePeerClient> client_list = new ArrayList<HandlePeerClient>();
+	private ArrayList<String> log_list = new ArrayList<String>();
 	private ExecutorService main_worker = Executors.newFixedThreadPool(5);;
 	private static ExecutorService broadcast_worker = Executors.newFixedThreadPool(20);;
-	private ServerSocket server;
+	private static ServerSocket server;
 	private InetAddress addr;
 	private int CONECTION_SIZE = 20;
 	private int NEIGHBOR_NUMBER = 2;
-	private static int TTL = 2;
+	private static int TTL = 4;
 	private ArrayList<String> trans_list = new ArrayList<String>();
 	private String prev_block_hash;
+	private int TRANSACTION_NUM_IN_BLOCK = 1;
 
 	public static void main(String[] args) {
 
@@ -50,7 +52,7 @@ public class TradingHall {
 			System.out.println("========================================");
 			System.out.println("=        Welcome to Trading Hall       =");
 			System.out.println("========================================");
-			System.out.print("1. Sign Up\n" + "2. Log in\n" + "3. Exit\n");
+			System.out.print("1. Sign Up\n" + "2. Log in\n" + "3. Exit\n" + "4. Test\n");
 			int user_action = scanner.nextInt();
 
 			switch (user_action) {
@@ -69,6 +71,34 @@ public class TradingHall {
 				break;
 			case 3: // Exit
 				System.exit(0);
+			case 4:
+				// Wallet w =
+				// HandlingObj.getWallet("7948f4a1-fbb0-4e7a-bd40-a445648758d8");
+				// Address output_address =
+				// HandlingObj.getAddress("n29Zm6abLrS1eG7BN7CowUoCtvCyKTLevT");
+				//
+				// int output_value = 1;
+				//
+				// if (w.getTotalValue() >= output_value) {
+				// Transaction trans = new Transaction(w, output_address,
+				// output_value);
+				// HandlingObj.savingTransaction(trans);
+				//
+				// String content = "";
+				// try {
+				// content = FileUtils.readFileToString(
+				// new File(String.format("./data/transaction/%s.txt",
+				// trans.getTransactionHash())),
+				// "UTF-8");
+				// } catch (IOException e) {
+				// // TODO Auto-generated catch block
+				// e.printStackTrace();
+				// }
+				// broadcast_worker.execute(new PeerClient(TTL, "Transaction",
+				// content)); // broadcast
+				// } else {
+				// System.out.println("You do not have enough money");
+				// }
 			default:
 				break;
 			}
@@ -91,6 +121,14 @@ public class TradingHall {
 				viewTransactionPage(wallet);
 				break;
 			case 3:
+				int local_port = server.getLocalPort();
+				String local_ip = server.getInetAddress().getHostAddress();
+				broadcast_worker.execute(new PeerClient(TTL, "Exit", local_ip + ":" + local_port)); // broadcast
+				try {
+					Thread.sleep(10000); // 10 seconds
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 				System.exit(0);
 			default:
 				break;
@@ -283,7 +321,7 @@ public class TradingHall {
 
 		@Override
 		public void run() {
-			while (trans_list.size() < 3) {
+			while (trans_list.size() < TRANSACTION_NUM_IN_BLOCK) {
 				try {
 					Thread.sleep(60000); // 1 min
 				} catch (InterruptedException e) {
@@ -317,22 +355,29 @@ public class TradingHall {
 		/** Run a thread */
 		public void run() {
 			try {
-				// Create a socket to connect to the server
+				// Create a socket to connect to the
 				socket = new Socket(serverIP, serverPort);
 
 				/** ====== Get Neighbor List ====== */
-				// Create an output stream to send data to server
-				DataOutputStream outputToServer = new DataOutputStream(socket.getOutputStream());
-				outputToServer.writeUTF("List");
+				while (neighbor_list.size() <= 1) {
+					// Create an output stream to send data to server
+					DataOutputStream outputToServer = new DataOutputStream(socket.getOutputStream());
+					outputToServer.writeUTF("List");
 
-				// Create an input stream to receive data from server
-				DataInputStream inputFromServer = new DataInputStream(socket.getInputStream());
-				String server_return_list = inputFromServer.readUTF();
-				// System.out.println("Server Response: " + server_return_list);
+					// Create an input stream to receive data from server
+					DataInputStream inputFromServer = new DataInputStream(socket.getInputStream());
+					String server_return_list = inputFromServer.readUTF();
 
-				// get neighbor list
-				neighbor_list = new Gson().fromJson(server_return_list, new TypeToken<ArrayList<String>>() {
-				}.getType());
+					// get neighbor list
+					neighbor_list = new Gson().fromJson(server_return_list, new TypeToken<ArrayList<String>>() {
+					}.getType());
+					neighbor_list.add(serverIP + ":" + Integer.toString(serverPort));
+					try {
+			            Thread.sleep(5000);
+			        } catch (InterruptedException e) {
+			            e.printStackTrace(); 
+			        }
+				}
 				/** ====== /Get Neighbor List ====== */
 
 				InetAddress local_ip = InetAddress.getByName("127.0.0.1");
@@ -406,7 +451,7 @@ public class TradingHall {
 
 					String self_display = peerClientIP + ":" + Integer.toString(peerClientPort);
 					if (message.equals("Transaction")) {
-						System.out.println("Reveived from client: " + self_display + " send Transaction data");
+						log_list.add("Reveived from client: " + self_display + " send Transaction data");
 
 						// content to transaction and save
 						Gson gson = new GsonBuilder()
@@ -419,15 +464,18 @@ public class TradingHall {
 							trans_list.add(transaction.getTransactionHash());
 						}
 					} else if (message.equals("Block")) {
-						System.out.println("Reveived from client: " + self_display + " send Block data");
+						log_list.add("Reveived from client: " + self_display + " send Block data");
 
 						// content to block and save
-						Gson gson = new GsonBuilder()
-								.registerTypeAdapter(Block.class, new BlockDeserializer()).create();
+						Gson gson = new GsonBuilder().registerTypeAdapter(Block.class, new BlockDeserializer())
+								.create();
 						Block block = gson.fromJson(content, Block.class);
 						HandlingObj.savingBlock(block);
+					} else if (message.equals("Exit")) {
+						log_list.add("Reveived from client: " + self_display + " send Exit request");
+						neighbor_list.remove(content);
 					}
-					
+
 					if (ttl != 0) {
 						broadcast_worker.execute(new PeerClient(ttl, message, content)); // broadcast
 					}
@@ -500,9 +548,8 @@ public class TradingHall {
 
 					// Create a socket to connect to the peer
 					String[] parts = neighbor.split(":");
-					String ip = parts[0]; // 004
-					String port = parts[1]; // 034556
-
+					String ip = parts[0];
+					String port = parts[1];
 					socket = new Socket(ip, Integer.parseInt(port));
 					outputToLink = new DataOutputStream(socket.getOutputStream());
 					inputFromLink = new DataInputStream(socket.getInputStream());
