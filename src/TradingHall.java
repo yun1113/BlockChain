@@ -33,7 +33,7 @@ public class TradingHall {
 	private InetAddress addr;
 	private int CONECTION_SIZE = 20;
 	private int NEIGHBOR_NUMBER = 2;
-	private static int TTL = 4;
+	private static int TTL = 2;
 	private ArrayList<String> trans_list = new ArrayList<String>();
 	private String first_block_hash = "000febab7dbd0a466fbc958e0a063642bfa7201bcb89b6687d753cae28024c50";
 	private int TRANSACTION_NUM_IN_BLOCK = 1;
@@ -72,33 +72,28 @@ public class TradingHall {
 			case 3: // Exit
 				System.exit(0);
 			case 4:
-				 Wallet w =
-				 HandlingObj.getWallet("7948f4a1-fbb0-4e7a-bd40-a445648758d8");
-				 Address output_address =
-				 HandlingObj.getAddress("n29Zm6abLrS1eG7BN7CowUoCtvCyKTLevT");
-				
-				 int output_value = 1;
-				
-				 if (w.getTotalValue() >= output_value) {
-				 Transaction trans = new Transaction(w, output_address,
-				 output_value);
-				 HandlingObj.savingTransaction(trans);
-				
-				 String content = "";
-				 try {
-				 content = FileUtils.readFileToString(
-				 new File(String.format("./data/transaction/%s.txt",
-				 trans.getTransactionHash())),
-				 "UTF-8");
-				 } catch (IOException e) {
-				 // TODO Auto-generated catch block
-				 e.printStackTrace();
-				 }
-				 broadcast_worker.execute(new PeerClient(TTL, "Transaction",
-				 content)); // broadcast
-				 } else {
-				 System.out.println("You do not have enough money");
-				 }
+				Wallet w = HandlingObj.getWallet("7948f4a1-fbb0-4e7a-bd40-a445648758d8");
+				Address output_address = HandlingObj.getAddress("mnA2RVLrorxkTvPNs12PGtT2X6rbrimMCG");
+
+				int output_value = 1;
+
+				if (w.getTotalValue() >= output_value) {
+					Transaction trans = new Transaction(w, output_address, output_value);
+					HandlingObj.savingTransaction(trans);
+
+					String content = "";
+					try {
+						content = FileUtils.readFileToString(
+								new File(String.format("./data/transaction/%s.txt", trans.getTransactionHash())),
+								"UTF-8");
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					broadcast_worker.execute(new PeerClient(TTL, "Transaction", content)); // broadcast
+				} else {
+					System.out.println("You do not have enough money");
+				}
 			default:
 				break;
 			}
@@ -323,7 +318,6 @@ public class TradingHall {
 		public void run() {
 			while (trans_list.size() < TRANSACTION_NUM_IN_BLOCK) {
 				try {
-					System.out.println(trans_list.size());
 					Thread.sleep(10000); // 1 min
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
@@ -331,32 +325,38 @@ public class TradingHall {
 				}
 			}
 
-			System.out.println("in Block");
-			Block block = new Block(get_prev_block(), trans_list);
-			HandlingObj.savingBlock(block);
+			String prev_block_hash = get_prev_block();
+			Block prev_block = HandlingObj.getBlcok(prev_block_hash);
+			Block block = new Block(prev_block_hash, trans_list);
+			
+			
+			if (prev_block.getNextBlockHash().equals("")) {
+				HandlingObj.savingBlock(block);
 
-			String content = "";
-			try {
-				content = FileUtils.readFileToString(
-						new File(String.format("./data/block/%s.txt", block.getBlockHash())), "UTF-8");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				String content = "";
+				try {
+					content = FileUtils.readFileToString(
+							new File(String.format("./data/block/%s.txt", block.getBlockHash())), "UTF-8");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				broadcast_worker.execute(new PeerClient(TTL, "Block", content)); // broadcast
 			}
-			broadcast_worker.execute(new PeerClient(TTL, "Block", content)); // broadcast
 		}
 	}
-	
-	private String get_prev_block(){
-		String block_hash = first_block_hash; 
-		while(true){
-			Block b = HandlingObj.getBlcok(block_hash);
-			if(b.getNextBlockHash().equals("")){
+
+	private String get_prev_block() {
+		String block_hash = first_block_hash;
+		Block b = null;
+		while (true) {
+			b = HandlingObj.getBlcok(block_hash);
+			if (b.getNextBlockHash().equals("")) {
 				break;
 			}
-			block_hash = b.getNextBlockHash();	
+			block_hash = b.getNextBlockHash();
 		}
-		return "";
+		return b.getBlockHash();
 	}
 
 	// Define he thread class for receive message
@@ -387,10 +387,10 @@ public class TradingHall {
 					}.getType());
 					neighbor_list.add(serverIP + ":" + Integer.toString(serverPort));
 					try {
-			            Thread.sleep(5000);
-			        } catch (InterruptedException e) {
-			            e.printStackTrace(); 
-			        }
+						Thread.sleep(5000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 				/** ====== /Get Neighbor List ====== */
 
@@ -472,7 +472,7 @@ public class TradingHall {
 								.registerTypeAdapter(Transaction.class, new TransactionDeserializer()).create();
 						Transaction transaction = gson.fromJson(content, Transaction.class);
 						HandlingObj.savingTransaction(transaction);
-						
+
 						// if not repeat, add to transaction list
 						if (!trans_list.contains(transaction.getTransactionHash())) {
 							trans_list.add(transaction.getTransactionHash());

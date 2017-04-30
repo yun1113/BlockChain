@@ -31,6 +31,10 @@ public class Block {
 		boolean transaction_valid = true;
 		for (String t : transaction_list) {
 			Transaction trans = HandlingObj.getTransaction(t);
+			// no repeat transaction
+			if(!trans.getBlockID().equals("")){
+				continue;
+			}
 			if (!validateTransactionSign(trans)) {
 				break;
 			}
@@ -74,8 +78,10 @@ public class Block {
 	private void updateTransaction() {
 		for (String t : transaction_list) {
 			Transaction trans = HandlingObj.getTransaction(t);
-			trans.setBlockID(block_hash);
-			HandlingObj.savingTransaction(trans);
+			if(!trans.getBlockID().equals("")){
+				trans.setBlockID(block_hash);
+				HandlingObj.savingTransaction(trans);
+			}
 		}
 	}
 
