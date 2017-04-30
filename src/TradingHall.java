@@ -35,7 +35,7 @@ public class TradingHall {
 	private int NEIGHBOR_NUMBER = 2;
 	private static int TTL = 4;
 	private ArrayList<String> trans_list = new ArrayList<String>();
-	private String prev_block_hash;
+	private String first_block_hash = "000febab7dbd0a466fbc958e0a063642bfa7201bcb89b6687d753cae28024c50";
 	private int TRANSACTION_NUM_IN_BLOCK = 1;
 
 	public static void main(String[] args) {
@@ -72,33 +72,33 @@ public class TradingHall {
 			case 3: // Exit
 				System.exit(0);
 			case 4:
-				// Wallet w =
-				// HandlingObj.getWallet("7948f4a1-fbb0-4e7a-bd40-a445648758d8");
-				// Address output_address =
-				// HandlingObj.getAddress("n29Zm6abLrS1eG7BN7CowUoCtvCyKTLevT");
-				//
-				// int output_value = 1;
-				//
-				// if (w.getTotalValue() >= output_value) {
-				// Transaction trans = new Transaction(w, output_address,
-				// output_value);
-				// HandlingObj.savingTransaction(trans);
-				//
-				// String content = "";
-				// try {
-				// content = FileUtils.readFileToString(
-				// new File(String.format("./data/transaction/%s.txt",
-				// trans.getTransactionHash())),
-				// "UTF-8");
-				// } catch (IOException e) {
-				// // TODO Auto-generated catch block
-				// e.printStackTrace();
-				// }
-				// broadcast_worker.execute(new PeerClient(TTL, "Transaction",
-				// content)); // broadcast
-				// } else {
-				// System.out.println("You do not have enough money");
-				// }
+				 Wallet w =
+				 HandlingObj.getWallet("7948f4a1-fbb0-4e7a-bd40-a445648758d8");
+				 Address output_address =
+				 HandlingObj.getAddress("n29Zm6abLrS1eG7BN7CowUoCtvCyKTLevT");
+				
+				 int output_value = 1;
+				
+				 if (w.getTotalValue() >= output_value) {
+				 Transaction trans = new Transaction(w, output_address,
+				 output_value);
+				 HandlingObj.savingTransaction(trans);
+				
+				 String content = "";
+				 try {
+				 content = FileUtils.readFileToString(
+				 new File(String.format("./data/transaction/%s.txt",
+				 trans.getTransactionHash())),
+				 "UTF-8");
+				 } catch (IOException e) {
+				 // TODO Auto-generated catch block
+				 e.printStackTrace();
+				 }
+				 broadcast_worker.execute(new PeerClient(TTL, "Transaction",
+				 content)); // broadcast
+				 } else {
+				 System.out.println("You do not have enough money");
+				 }
 			default:
 				break;
 			}
@@ -323,14 +323,16 @@ public class TradingHall {
 		public void run() {
 			while (trans_list.size() < TRANSACTION_NUM_IN_BLOCK) {
 				try {
-					Thread.sleep(60000); // 1 min
+					System.out.println(trans_list.size());
+					Thread.sleep(10000); // 1 min
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 
-			Block block = new Block(prev_block_hash, trans_list);
+			System.out.println("in Block");
+			Block block = new Block(get_prev_block(), trans_list);
 			HandlingObj.savingBlock(block);
 
 			String content = "";
@@ -343,6 +345,18 @@ public class TradingHall {
 			}
 			broadcast_worker.execute(new PeerClient(TTL, "Block", content)); // broadcast
 		}
+	}
+	
+	private String get_prev_block(){
+		String block_hash = first_block_hash; 
+		while(true){
+			Block b = HandlingObj.getBlcok(block_hash);
+			if(b.getNextBlockHash().equals("")){
+				break;
+			}
+			block_hash = b.getNextBlockHash();	
+		}
+		return "";
 	}
 
 	// Define he thread class for receive message
@@ -458,9 +472,9 @@ public class TradingHall {
 								.registerTypeAdapter(Transaction.class, new TransactionDeserializer()).create();
 						Transaction transaction = gson.fromJson(content, Transaction.class);
 						HandlingObj.savingTransaction(transaction);
-
+						
 						// if not repeat, add to transaction list
-						if (trans_list.indexOf(transaction.getTransactionHash()) != -1) {
+						if (!trans_list.contains(transaction.getTransactionHash())) {
 							trans_list.add(transaction.getTransactionHash());
 						}
 					} else if (message.equals("Block")) {
@@ -480,30 +494,6 @@ public class TradingHall {
 						broadcast_worker.execute(new PeerClient(ttl, message, content)); // broadcast
 					}
 
-					// if (sentence.equals("List")) {
-					// System.out.println("Reveived from client: " +
-					// self_display + " List Request");
-					//
-					// ArrayList<String> connection_list = new
-					// ArrayList<String>();
-					// for (HandlePeerClient i : client_list) {
-					// if (i != null) {
-					// connection_list.add(i.getConnectionDisplay());
-					// }
-					// }
-					//
-					// // remove self and get random
-					// connection_list.remove(self_display);
-					// Collections.shuffle(connection_list);
-					//
-					// String json;
-					// if (connection_list.size() < NEIGHBOR_NUMBER) {
-					// json = new Gson().toJson(connection_list);
-					// } else {
-					// json = new Gson().toJson(connection_list.subList(0, 2));
-					// }
-					// outputToClient.writeUTF(json);
-					// }
 				}
 			} catch (IOException e) {
 				// System.err.println(e);
