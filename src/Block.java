@@ -175,10 +175,6 @@ public class Block {
 		return result;
 	}
 
-	public String getHashPrevBlock() {
-		return prev_block_hash;
-	}
-
 	public long getTime() {
 		return timestamp;
 	}
@@ -209,5 +205,9 @@ public class Block {
 	
 	public String getNextBlockHash(){
 		return next_block_hash;
+	}
+	
+	public String getDifficaulty(){
+		return difficulty;
 	}
 }

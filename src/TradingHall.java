@@ -18,6 +18,7 @@ import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -26,7 +27,7 @@ import com.google.gson.reflect.TypeToken;
 public class TradingHall {
 	public static ArrayList<String> neighbor_list = new ArrayList<String>();
 	private ArrayList<HandlePeerClient> client_list = new ArrayList<HandlePeerClient>();
-	private ArrayList<String> log_list = new ArrayList<String>();
+	private static ArrayList<String> log_list = new ArrayList<String>();
 	private ExecutorService main_worker = Executors.newFixedThreadPool(5);;
 	private static ExecutorService broadcast_worker = Executors.newFixedThreadPool(20);;
 	private static ServerSocket server;
@@ -53,7 +54,8 @@ public class TradingHall {
 			System.out.println("=        Welcome to Trading Hall       =");
 			System.out.println("========================================");
 			System.out.print("1. Sign Up\n" + "2. Log in\n" + "3. List Block\n" + "4. Watch Block Data\n"
-					+ "5. Watch Transaction Data\n" + "6. Exit\n" + "7. Test\n");
+					+ "5. Watch Transaction Data\n" + "6. Exit\n" + "7. Test: Make transaction 1\n"
+					+ "8. Test: Make transaction 2\n" + "9. Log\n");
 			int user_action = scanner.nextInt();
 
 			switch (user_action) {
@@ -92,7 +94,7 @@ public class TradingHall {
 				}
 				Block block = HandlingObj.getBlcok(block_id);
 				System.out.println("Block ID: " + block.getBlockHash());
-				System.out.println("Prev Block ID: " + block.getHashPrevBlock());
+				System.out.println("Prev Block ID: " + block.getPrevBlockHash());
 				if (!block.getNextBlockHash().equals("")) {
 					System.out.println("Next Block ID: " + block.getNextBlockHash());
 				}
@@ -125,6 +127,7 @@ public class TradingHall {
 			case 6: // Exit
 				System.exit(0);
 			case 7:
+				System.out.println("from wallet 7948f4a1-fbb0-4e7a-bd40-a445648758d8 to address mnA2RVLrorxkTvPNs12PGtT2X6rbrimMCG");
 				Wallet w = HandlingObj.getWallet("7948f4a1-fbb0-4e7a-bd40-a445648758d8");
 				Address output_address = HandlingObj.getAddress("mnA2RVLrorxkTvPNs12PGtT2X6rbrimMCG");
 
@@ -146,6 +149,38 @@ public class TradingHall {
 					broadcast_worker.execute(new PeerClient(TTL, "Transaction", content)); // broadcast
 				} else {
 					System.out.println("You do not have enough money");
+				}
+			case 8:
+				System.out.println("from wallet 7948f4a1-fbb0-4e7a-bd40-a445648758d8 to address mnA2RVLrorxkTvPNs12PGtT2X6rbrimMCG");
+				Wallet w2 = HandlingObj.getWallet("7948f4a1-fbb0-4e7a-bd40-a445648758d8");
+				Address output_address2 = HandlingObj.getAddress("mnA2RVLrorxkTvPNs12PGtT2X6rbrimMCG");
+
+				int output_value2 = 1;
+
+				if (w2.getTotalValue() >= output_value2) {
+					Transaction transaction = new Transaction(w2, output_address2, output_value2);
+					HandlingObj.savingTransaction(transaction);
+
+					String content = "";
+					try {
+						content = FileUtils.readFileToString(
+								new File(String.format("./data/transaction/%s.txt", transaction.getTransactionHash())),
+								"UTF-8");
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					broadcast_worker.execute(new PeerClient(TTL, "Transaction", content)); // broadcast
+				} else {
+					System.out.println("You do not have enough money");
+				}
+			case 9:
+				for (String i : log_list) {
+					System.out.println(i);
+				}
+			case 10:
+				for (String i : neighbor_list) {
+					System.out.println(i);
 				}
 			default:
 				break;
@@ -543,7 +578,11 @@ public class TradingHall {
 								.create();
 						Block block = gson.fromJson(content, Block.class);
 
-						HandlingObj.savingBlock(block);
+						if (verify_block(block)) {
+							HandlingObj.savingBlock(block);
+						} else {
+							log_list.add("Block id " + block.getBlockHash() + " invalid");
+						}
 					} else if (message.equals("Exit")) {
 						log_list.add("Reveived from client: " + self_display + " send Exit request");
 						neighbor_list.remove(content);
@@ -561,6 +600,25 @@ public class TradingHall {
 				} catch (IOException ex) {
 					ex.printStackTrace();
 				}
+			}
+		}
+
+		public boolean verify_block(Block block) {
+			String hash_string = block.getPrevBlockHash() + block.getTimeStamp();
+			for (String t : block.getTransactionList()) {
+				Transaction trans = HandlingObj.getTransaction(t);
+				hash_string += trans.getTransactionHash();
+			}
+			int nonce = block.getNonce();
+
+			hash_string += Integer.toString(nonce);
+			String sha256hex = DigestUtils.sha256Hex(hash_string);
+			String double_sha256hex = DigestUtils.sha256Hex(sha256hex);
+
+			if (double_sha256hex.startsWith(block.getDifficaulty())) {
+				return true;
+			} else {
+				return false;
 			}
 		}
 
