@@ -150,6 +150,7 @@ public class TradingHall {
 				} else {
 					System.out.println("You do not have enough money");
 				}
+				break;
 			case 8:
 				System.out.println("from wallet 7948f4a1-fbb0-4e7a-bd40-a445648758d8 to address mnA2RVLrorxkTvPNs12PGtT2X6rbrimMCG");
 				Wallet w2 = HandlingObj.getWallet("7948f4a1-fbb0-4e7a-bd40-a445648758d8");
@@ -174,14 +175,17 @@ public class TradingHall {
 				} else {
 					System.out.println("You do not have enough money");
 				}
+				break;
 			case 9:
 				for (String i : log_list) {
 					System.out.println(i);
 				}
+				break;
 			case 10:
 				for (String i : neighbor_list) {
 					System.out.println(i);
 				}
+				break;
 			default:
 				break;
 			}

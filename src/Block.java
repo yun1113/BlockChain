@@ -28,11 +28,13 @@ public class Block {
 		this.transaction_list = transaction_list;
 		this.prev_block_hash = prev_block_hash;
 
+		ArrayList<String> temp = new ArrayList<String>();
 		boolean transaction_valid = true;
 		for (String t : transaction_list) {
 			Transaction trans = HandlingObj.getTransaction(t);
 			// no repeat transaction
-			if(!trans.getBlockID().equals("")){
+			if (!trans.getBlockID().equals("")) {
+				temp.add(t);
 				continue;
 			}
 			if (!validateTransactionSign(trans)) {
@@ -42,13 +44,21 @@ public class Block {
 				break;
 			}
 		}
-		if (transaction_valid) {
-			generateNonce();
-		} else {
-			System.out.println("Transaciton Invalid");
+
+		// remove repeat transaction
+		for (String t : temp) {
+			transaction_list.remove(t);
 		}
-		updateTransaction();
-		updatePrevBlock();
+
+		if (transaction_list.size() != 0) {
+			if (transaction_valid) {
+				generateNonce();
+			} else {
+				System.out.println("Transaciton Invalid");
+			}
+			updateTransaction();
+			updatePrevBlock();
+		}
 	}
 
 	public Block(String block_hash, long timestamp, int nonce, String prev_block_hash,
@@ -74,11 +84,11 @@ public class Block {
 		block.setNextBlockHash(block_hash);
 		HandlingObj.savingBlock(block);
 	}
-	
+
 	private void updateTransaction() {
 		for (String t : transaction_list) {
 			Transaction trans = HandlingObj.getTransaction(t);
-			if(trans.getBlockID().equals("")){
+			if (trans.getBlockID().equals("")) {
 				trans.setBlockID(block_hash);
 				HandlingObj.savingTransaction(trans);
 			}
@@ -122,7 +132,7 @@ public class Block {
 			String addr = trans.getInputList().get(0).get("address");
 			Address a = HandlingObj.getAddress(addr);
 			ArrayList<String> addr_trans = a.getTransactionList();
-			Transaction t = HandlingObj.getTransaction(addr_trans.get(addr_trans.size()-2));
+			Transaction t = HandlingObj.getTransaction(addr_trans.get(addr_trans.size() - 2));
 			if (validateTransactionOrigin(t)) {
 				return true;
 			} else {
@@ -198,16 +208,16 @@ public class Block {
 	public ArrayList<String> getTransactionList() {
 		return transaction_list;
 	}
-	
-	public void setNextBlockHash(String next_block_hash){
+
+	public void setNextBlockHash(String next_block_hash) {
 		this.next_block_hash = next_block_hash;
 	}
-	
-	public String getNextBlockHash(){
+
+	public String getNextBlockHash() {
 		return next_block_hash;
 	}
-	
-	public String getDifficaulty(){
+
+	public String getDifficaulty() {
 		return difficulty;
 	}
 }
