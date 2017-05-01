@@ -55,7 +55,7 @@ public class TradingHall {
 			System.out.println("========================================");
 			System.out.print("1. Sign Up\n" + "2. Log in\n" + "3. List Block\n" + "4. Watch Block Data\n"
 					+ "5. Watch Transaction Data\n" + "6. Exit\n" + "7. Test: Make transaction 1\n"
-					+ "8. Test: Make transaction 2\n" + "9. Log\n" + "10. Test: Exit\n");
+					+ "8. Test: Make transaction 2\n" + "9. Log\n" + "10. Test: Exit\n"+ "11. Test: Fake Block\n" + "12. Neighbor List\n");
 			int user_action = scanner.nextInt();
 
 			switch (user_action) {
@@ -191,6 +191,15 @@ public class TradingHall {
 					e.printStackTrace();
 				}
 				System.exit(0);
+				break;
+			case 11:
+				String content = "";
+				try {
+					content = FileUtils.readFileToString(new File(String.format("./data/block/fake_block.txt")), "UTF-8");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				broadcast_worker.execute(new PeerClient(TTL, "Block", content)); // broadcast
 				break;
 			case 12:
 				for (String i : neighbor_list) {
