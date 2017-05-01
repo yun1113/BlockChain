@@ -419,10 +419,10 @@ public class TradingHall {
 				}
 
 				String prev_block_hash = get_prev_block();
-				Block prev_block = HandlingObj.getBlcok(prev_block_hash);
 				Block block = new Block(prev_block_hash, trans_list);
-
-				if (prev_block.getNextBlockHash().equals("")) {
+				Block prev_block = HandlingObj.getBlcok(prev_block_hash);
+				
+				if (!prev_block.getNextBlockHash().equals("")) {
 					HandlingObj.savingBlock(block);
 
 					String content = "";
@@ -435,7 +435,7 @@ public class TradingHall {
 					}
 					broadcast_worker.execute(new PeerClient(TTL, "Block", content)); // broadcast
 				}
-				ArrayList<String> temp_lisit = new ArrayList<String>( block.getTransactionList());
+				ArrayList<String> temp_lisit = new ArrayList<String>(block.getTransactionList());
 				for (String i :temp_lisit) {
 					trans_list.remove(i);
 				}
