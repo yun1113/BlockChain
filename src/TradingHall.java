@@ -431,8 +431,8 @@ public class TradingHall {
 					}
 					broadcast_worker.execute(new PeerClient(TTL, "Block", content)); // broadcast
 				}
-
-				for (String i : block.getTransactionList()) {
+				ArrayList<String> temp_lisit = new ArrayList<String>( block.getTransactionList());
+				for (String i :temp_lisit) {
 					trans_list.remove(i);
 				}
 			}
