@@ -55,7 +55,7 @@ public class TradingHall {
 			System.out.println("========================================");
 			System.out.print("1. Sign Up\n" + "2. Log in\n" + "3. List Block\n" + "4. Watch Block Data\n"
 					+ "5. Watch Transaction Data\n" + "6. Exit\n" + "7. Test: Make transaction 1\n"
-					+ "8. Test: Make transaction 2\n" + "9. Log\n");
+					+ "8. Test: Make transaction 2\n" + "9. Log\n" + "10. Test: Exit\n");
 			int user_action = scanner.nextInt();
 
 			switch (user_action) {
@@ -182,6 +182,17 @@ public class TradingHall {
 				}
 				break;
 			case 10:
+				int local_port = server.getLocalPort();
+				String local_ip = server.getInetAddress().getHostAddress();
+				broadcast_worker.execute(new PeerClient(TTL, "Exit", local_ip + ":" + local_port)); // broadcast
+				try {
+					Thread.sleep(10000); // 10 seconds
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				System.exit(0);
+				break;
+			case 12:
 				for (String i : neighbor_list) {
 					System.out.println(i);
 				}
