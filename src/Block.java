@@ -78,7 +78,7 @@ public class Block {
 	private void updateTransaction() {
 		for (String t : transaction_list) {
 			Transaction trans = HandlingObj.getTransaction(t);
-			if(!trans.getBlockID().equals("")){
+			if(trans.getBlockID().equals("")){
 				trans.setBlockID(block_hash);
 				HandlingObj.savingTransaction(trans);
 			}

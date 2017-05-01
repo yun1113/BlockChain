@@ -52,8 +52,8 @@ public class TradingHall {
 			System.out.println("========================================");
 			System.out.println("=        Welcome to Trading Hall       =");
 			System.out.println("========================================");
-			System.out.print("1. Sign Up\n" + "2. Log in\n" + "3. List Block\n" + "4. Watch Block Data\n" + "5. Exit\n"
-					+ "6. Test\n");
+			System.out.print("1. Sign Up\n" + "2. Log in\n" + "3. List Block\n" + "4. Watch Block Data\n"
+					+ "5. Watch Transaction Data\n" + "6. Exit\n" + "7. Test\n");
 			int user_action = scanner.nextInt();
 
 			switch (user_action) {
@@ -92,7 +92,7 @@ public class TradingHall {
 				}
 				Block block = HandlingObj.getBlcok(block_id);
 				System.out.println("Block ID: " + block.getBlockHash());
-				System.out.println("Prev Block ID: " + block.getHashPrevBlock());
+				System.out.println("Prev Block ID: " + block.getPrevBlockHash());
 				if (!block.getNextBlockHash().equals("")) {
 					System.out.println("Next Block ID: " + block.getNextBlockHash());
 				}
@@ -102,22 +102,42 @@ public class TradingHall {
 				}
 
 				break;
-			case 5: // Exit
+			case 5:
+				String transaction_id = "";
+				System.out.println("Input transaction ID:");
+				while (transaction_id.equals("")) {
+					transaction_id = scanner.nextLine();
+				}
+				Transaction trans = HandlingObj.getTransaction(transaction_id);
+				System.out.println("Transaction ID: " + trans.getTransactionHash());
+				System.out.println("Block ID: " + trans.getBlockID());
+				System.out.println("Input Address List: ");
+				if (!(trans.getInputList().size() == 0)) {
+					for (Map<String, String> i : trans.getInputList()) {
+						System.out.println(i.get("address") + ":" + i.get("value"));
+					}
+				}
+				System.out.println("output Address List: ");
+				for (Map<String, String> i : trans.getOutputList()) {
+					System.out.println(i.get("address") + ":" + i.get("value"));
+				}
+				break;
+			case 6: // Exit
 				System.exit(0);
-			case 6:
+			case 7:
 				Wallet w = HandlingObj.getWallet("7948f4a1-fbb0-4e7a-bd40-a445648758d8");
 				Address output_address = HandlingObj.getAddress("mnA2RVLrorxkTvPNs12PGtT2X6rbrimMCG");
 
 				int output_value = 1;
 
 				if (w.getTotalValue() >= output_value) {
-					Transaction trans = new Transaction(w, output_address, output_value);
-					HandlingObj.savingTransaction(trans);
+					Transaction transaction = new Transaction(w, output_address, output_value);
+					HandlingObj.savingTransaction(transaction);
 
 					String content = "";
 					try {
 						content = FileUtils.readFileToString(
-								new File(String.format("./data/transaction/%s.txt", trans.getTransactionHash())),
+								new File(String.format("./data/transaction/%s.txt", transaction.getTransactionHash())),
 								"UTF-8");
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -349,31 +369,37 @@ public class TradingHall {
 
 		@Override
 		public void run() {
-			while (trans_list.size() < TRANSACTION_NUM_IN_BLOCK) {
-				try {
-					Thread.sleep(10000); // 1 min
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			while (true) {
+				while (trans_list.size() < TRANSACTION_NUM_IN_BLOCK) {
+					try {
+						Thread.sleep(10000); // 10s
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
-			}
 
-			String prev_block_hash = get_prev_block();
-			Block prev_block = HandlingObj.getBlcok(prev_block_hash);
-			Block block = new Block(prev_block_hash, trans_list);
+				String prev_block_hash = get_prev_block();
+				Block prev_block = HandlingObj.getBlcok(prev_block_hash);
+				Block block = new Block(prev_block_hash, trans_list);
 
-			if (prev_block.getNextBlockHash().equals("")) {
-				HandlingObj.savingBlock(block);
+				if (prev_block.getNextBlockHash().equals("")) {
+					HandlingObj.savingBlock(block);
 
-				String content = "";
-				try {
-					content = FileUtils.readFileToString(
-							new File(String.format("./data/block/%s.txt", block.getBlockHash())), "UTF-8");
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					String content = "";
+					try {
+						content = FileUtils.readFileToString(
+								new File(String.format("./data/block/%s.txt", block.getBlockHash())), "UTF-8");
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					broadcast_worker.execute(new PeerClient(TTL, "Block", content)); // broadcast
 				}
-				broadcast_worker.execute(new PeerClient(TTL, "Block", content)); // broadcast
+				ArrayList<String> temp_lisit = new ArrayList<String>( block.getTransactionList());
+				for (String i :temp_lisit) {
+					trans_list.remove(i);
+				}
 			}
 		}
 	}
@@ -516,6 +542,7 @@ public class TradingHall {
 						Gson gson = new GsonBuilder().registerTypeAdapter(Block.class, new BlockDeserializer())
 								.create();
 						Block block = gson.fromJson(content, Block.class);
+
 						HandlingObj.savingBlock(block);
 					} else if (message.equals("Exit")) {
 						log_list.add("Reveived from client: " + self_display + " send Exit request");
